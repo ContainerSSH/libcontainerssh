@@ -18,9 +18,10 @@ require (
 	github.com/gorilla/schema v1.2.0
 	github.com/imdario/mergo v0.3.12
 	github.com/jcmturner/gokrb5/v8 v8.4.2
-	github.com/mattn/go-shellwords v1.0.12 // indirect
+	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/golicense v0.2.0
 	github.com/mitchellh/mapstructure v1.4.2
+	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.1
 	github.com/oschwald/geoip2-golang v1.5.0
 	github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494
@@ -31,7 +32,7 @@ require (
 	google.golang.org/genproto v0.0.0-20210524171403-669157292da3 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	k8s.io/api v0.21.1
-	k8s.io/apimachinery v0.21.1
+	k8s.io/apimachinery v0.22.2
 	k8s.io/client-go v0.21.1
 	sigs.k8s.io/yaml v1.2.0
 )
