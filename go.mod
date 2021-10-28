@@ -12,19 +12,17 @@ require (
 	github.com/docker/docker v20.10.6+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/fxamacker/cbor v1.5.1
-	github.com/go-enry/go-license-detector/v4 v4.1.0
 	github.com/google/go-cmp v0.5.6
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/schema v1.2.0
 	github.com/imdario/mergo v0.3.12
 	github.com/jcmturner/gokrb5/v8 v8.4.2
-	github.com/mattn/go-shellwords v1.0.12 // indirect
-	github.com/mitchellh/golicense v0.2.0
+	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/mapstructure v1.4.2
+	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.1
 	github.com/oschwald/geoip2-golang v1.5.0
 	github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494
-	github.com/rsc/goversion v1.2.0
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 	golang.org/x/net v0.0.0-20210525063256-abc453219eb5 // indirect
