@@ -136,3 +136,14 @@ func (a *AbstractSessionChannelHandler) OnWindow(
 ) error {
 	return fmt.Errorf("not supported")
 }
+
+func (s *AbstractSessionChannelHandler) OnX11Request(
+	requestID uint64,
+	singleConnection bool,
+	protocol string,
+	cookie string,
+	screen uint32,
+	reverseHandler ReverseForward,
+) error {
+	return fmt.Errorf("not supported")
+}

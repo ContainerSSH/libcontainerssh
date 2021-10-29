@@ -2,6 +2,7 @@ package security //nolint:testpackage
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net"
 	"sync"
@@ -11,7 +12,10 @@ import (
 	"github.com/containerssh/libcontainerssh/internal/sshserver"
 	"github.com/containerssh/libcontainerssh/log"
 	"github.com/containerssh/libcontainerssh/metadata"
+	"github.com/containerssh/libcontainerssh/message"
 	"github.com/stretchr/testify/assert"
+
+	"golang.org/x/crypto/ssh"
 )
 
 func TestMaxSessions(t *testing.T) {
@@ -121,4 +125,49 @@ func (d *dummySSHBackend) OnSessionChannel(
 	return &dummyBackend{
 		exit: d.exitChannel,
 	}, nil
+}
+
+func (s *dummySSHBackend) OnTCPForwardChannel(
+	channelID uint64,
+	hostToConnect string,
+	portToConnect uint32,
+	originatorHost string,
+	originatorPort uint32,
+) (channel sshserver.ForwardChannel, failureReason sshserver.ChannelRejection) {
+	return nil, sshserver.NewChannelRejection(ssh.Prohibited, message.ESSHNotImplemented, "Forwading channel unimplemented in docker backend", "Forwading channel unimplemented in docker backend")
+}
+
+func (s *dummySSHBackend) OnRequestTCPReverseForward(
+	bindHost string,
+	bindPort uint32,
+	reverseHandler sshserver.ReverseForward,
+) error {
+	return fmt.Errorf("Unimplemented")
+}
+
+func (s *dummySSHBackend) OnRequestCancelTCPReverseForward(
+	bindHost string,
+	bindPort uint32,
+) error {
+	return fmt.Errorf("Unimplemented")
+}
+
+func (s *dummySSHBackend) OnDirectStreamLocal(
+	channelID uint64,
+	path string,
+) (channel sshserver.ForwardChannel, failureReason sshserver.ChannelRejection) {
+	return nil, sshserver.NewChannelRejection(ssh.Prohibited, message.ESSHNotImplemented, "Forwading channel unimplemented in docker backend", "Forwading channel unimplemented in docker backend")
+}
+
+func (s *dummySSHBackend) OnRequestStreamLocal(
+	path string,
+	reverseHandler sshserver.ReverseForward,
+) error {
+	return fmt.Errorf("Unimplemented")
+}
+
+func (s *dummySSHBackend) OnRequestCancelStreamLocal(
+	path string,
+) error {
+	return fmt.Errorf("Unimplemented")
 }

@@ -174,6 +174,27 @@ type SessionChannel interface {
 	Close() error
 }
 
+const (
+	ChannelTypeReverseForward       string = "forwarded-tcpip"
+	ChannelTypeX11                  string = "x11"
+	ChannelTypeDirectStreamLocal    string = "direct-streamlocal@openssh.com"
+	ChannelTypeForwardedStreamLocal string = "forwarded-streamlocal@openssh.com"
+)
+
+type ReverseForward interface {
+	NewChannelTCP(connectedAddress string, connectedPort uint32, originatorAddress string, originatorPort uint32) (ForwardChannel, uint64, error)
+	NewChannelUnix(path string) (ForwardChannel, uint64, error)
+	NewChannelX11(originatorAddress string, originatorPort uint32) (ForwardChannel, uint64, error)
+}
+
+type ForwardChannel interface {
+	Read([]byte) (int, error)
+
+	Write([]byte) (int, error)
+
+	Close() error
+}
+
 // SSHConnectionHandler represents an established SSH connection that is ready to receive requests.
 type SSHConnectionHandler interface {
 	// OnUnsupportedGlobalRequest captures all global SSH requests and gives the implementation an opportunity to log
@@ -203,6 +224,42 @@ type SSHConnectionHandler interface {
 		extraData []byte,
 		session SessionChannel,
 	) (channel SessionChannelHandler, failureReason ChannelRejection)
+
+	// OnTCPForwardChannel is called when a channel of the direct-tcpip type is requested. The implementer must either return
+	//                  the channel result if the channel was successful, or failureReason to state why the channel
+	//                  should be rejected.
+	//
+	// channelID is an ID uniquely identifying the channel within then connection.
+	// hostToConnect contains the IP address or hostname to connect to
+	// portToConnect contains the port to connect to
+	// originatorHost contains the IP address or hostname the connection originates from
+	// originatorPort contains the port the connection originates from
+	OnTCPForwardChannel(
+		channelID uint64,
+		hostToConnect string,
+		portToConnect uint32,
+		originatorHost string,
+		originatorPort uint32,
+	) (channel ForwardChannel, failureReason ChannelRejection)
+
+	// OnRequestTCPReverseForward
+	OnRequestTCPReverseForward(bindHost string, bindPort uint32, reverseHandler ReverseForward) error
+
+	OnRequestCancelTCPReverseForward(bindHost string, bindPort uint32) error
+
+	OnDirectStreamLocal(
+		channelID uint64,
+		path string,
+	) (channel ForwardChannel, failureReason ChannelRejection)
+
+	OnRequestStreamLocal(
+		path string,
+		reverseHandler ReverseForward,
+	) error
+
+	OnRequestCancelStreamLocal(
+		path string,
+	) error
 
 	// OnShutdown is called when a shutdown of the SSH server is desired. The shutdownContext is passed as a deadline
 	//            for the shutdown, after which the server should abort all running connections and return as fast as
@@ -273,6 +330,23 @@ type SessionChannelHandler interface {
 		width uint32,
 		height uint32,
 		modeList []byte,
+	) error
+
+	// OnX11Request is caled when the client requests X11 forwarding. The implementation can return an error to reject the request.
+	//
+	// requestID is an incrementing number uniquely identifying this request within the channel.
+	// singleConnection is a flag determining whether only one request/window should be allowed to be forwarded
+	// protocol is a string identifying the X11 authentication protocol
+	// cookie is a string containing the X11 authentication cookie
+	// screen is an int identifying the X11 screen number
+	// reverseHandler is an interface that allows the calee to signal the caller when a new connection is made
+	OnX11Request(
+		requestID uint64,
+		singleConnection bool,
+		protocol string,
+		cookie string,
+		screen uint32,
+		reverseHandler ReverseForward,
 	) error
 
 	//endregion

@@ -59,6 +59,156 @@ func (s *sshConnectionHandler) OnSessionChannel(
 	}, nil
 }
 
+func (s *sshConnectionHandler) getPolicy(primary config2.SecurityExecutionPolicy) config2.SecurityExecutionPolicy {
+	if primary != config2.ExecutionPolicyUnconfigured {
+		return primary
+	}
+	if s.config.DefaultMode != config2.ExecutionPolicyUnconfigured {
+		return s.config.DefaultMode
+	}
+	return config2.ExecutionPolicyEnable
+}
+
+func (s *sshConnectionHandler) OnTCPForwardChannel(
+	channelID uint64,
+	hostToConnect string,
+	portToConnect uint32,
+	originatorHost string,
+	originatorPort uint32,
+) (channel sshserver.ForwardChannel, failureReason sshserver.ChannelRejection) {
+	mode := s.getPolicy(s.config.Forwarding.ForwardingMode)
+	switch mode {
+	case config2.ExecutionPolicyDisable:
+		err := sshserver.NewChannelRejection(
+			ssh.Prohibited,
+			message.ESecurityForwardingRejected,
+			"Forwarding is rejected",
+			"Forwarding is rejected because it is disabled",
+		)
+		s.logger.Debug(err)
+		return nil, err
+	case config2.ExecutionPolicyFilter:
+		err := sshserver.NewChannelRejection(
+			ssh.Prohibited,
+			message.ESecurityForwardingRejected,
+			"Forwarding is rejected",
+			"Forwarding is rejected because it is set to filtered and filtering is currently not supported",
+		)
+		s.logger.Debug(err)
+		return nil, err
+	case config2.ExecutionPolicyEnable:
+		fallthrough
+	default:
+		return s.backend.OnTCPForwardChannel(channelID, hostToConnect, portToConnect, originatorHost, originatorPort)
+	}
+}
+
+func (s *sshConnectionHandler) OnRequestTCPReverseForward(
+	bindHost string,
+	bindPort uint32,
+	reverseHandler sshserver.ReverseForward,
+) error {
+	mode := s.getPolicy(s.config.Forwarding.ReverseForwardingMode)
+	switch mode {
+	case config2.ExecutionPolicyDisable:
+		err := message.UserMessage(
+			message.ESecurityReverseForwardingRejected,
+			"Reverse forwarding is rejected",
+			"Reverse forwarding is rejected because it is disabled in the config",
+		)
+		s.logger.Debug(err)
+		return err
+	case config2.ExecutionPolicyFilter:
+		err := message.UserMessage(
+			message.ESecurityReverseForwardingRejected,
+			"Reverse forwarding is rejected",
+			"Reverse forwarding is rejected because it is set to filter and filtering reverse forwarding requests is not supported",
+		)
+		s.logger.Debug(err)
+		return err
+	case config2.ExecutionPolicyEnable:
+		fallthrough
+	default:
+		return s.backend.OnRequestTCPReverseForward(bindHost, bindPort, reverseHandler)
+	}
+}
+
+func (s *sshConnectionHandler) OnRequestCancelTCPReverseForward(
+	bindHost string,
+	bindPort uint32,
+) error {
+	return s.backend.OnRequestCancelTCPReverseForward(
+		bindHost,
+		bindPort,
+	)
+}
+
+func (s *sshConnectionHandler) OnDirectStreamLocal(
+	channelID uint64,
+	path string,
+) (channel sshserver.ForwardChannel, failureReason sshserver.ChannelRejection) {
+	mode := s.getPolicy(s.config.Forwarding.SocketForwardingMode)
+	switch mode {
+	case config2.ExecutionPolicyDisable:
+		err := sshserver.NewChannelRejection(
+			ssh.Prohibited,
+			message.ESecurityForwardingRejected,
+			"StreamLocal forwarding is rejected",
+			"StreamLocal forwarding is rejected because it is disabled",
+		)
+		s.logger.Debug(err)
+		return nil, err
+	case config2.ExecutionPolicyFilter:
+		err := sshserver.NewChannelRejection(
+			ssh.Prohibited,
+			message.ESecurityForwardingRejected,
+			"StreamLocal forwarding is rejected",
+			"StreamLocal forwarding is rejected because it is set to filtered and filtering is currently not supported",
+		)
+		s.logger.Debug(err)
+		return nil, err
+	case config2.ExecutionPolicyEnable:
+		fallthrough
+	default:
+		return s.backend.OnDirectStreamLocal(channelID, path)
+	}
+}
+
+func (s *sshConnectionHandler) OnRequestStreamLocal(
+	path string,
+	reverseHandler sshserver.ReverseForward,
+) error {
+	mode := s.getPolicy(s.config.Forwarding.SocketListenMode)
+	switch mode {
+	case config2.ExecutionPolicyDisable:
+		err := message.UserMessage(
+			message.ESecurityReverseForwardingRejected,
+			"Reverse socket forwarding is rejected",
+			"Reverse socket forwarding is rejected because it is disabled in the config",
+		)
+		s.logger.Debug(err)
+		return err
+	case config2.ExecutionPolicyFilter:
+		err := message.UserMessage(
+			message.ESecurityReverseForwardingRejected,
+			"Reverse socket forwarding is rejected",
+			"Reverse socket forwarding is rejected because it is set to filter and filtering reverse forwarding requests is not supported",
+		)
+		s.logger.Debug(err)
+		return err
+	case config2.ExecutionPolicyEnable:
+		fallthrough
+	default:
+		return s.backend.OnRequestStreamLocal(path, reverseHandler)
+	}
+}
+
+func (s *sshConnectionHandler) OnRequestCancelStreamLocal(
+	path string,
+) error {
+	return s.backend.OnRequestCancelStreamLocal(path)
+}
+
 // ErrTooManySessions indicates that too many sessions were opened in the same connection.
 type ErrTooManySessions struct {
 	labels message.Labels
