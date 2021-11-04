@@ -7,9 +7,7 @@ require (
 	github.com/aws/aws-sdk-go v1.38.47
 	github.com/containerd/containerd v1.5.7 // indirect
 	github.com/creasty/defaults v1.5.1
-	github.com/cucumber/gherkin-go/v11 v11.0.0 // indirect
-	github.com/cucumber/godog v0.11.0
-	github.com/cucumber/messages-go/v10 v10.0.3 // indirect
+	github.com/cucumber/godog v0.12.2
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/docker/docker v20.10.6+incompatible
@@ -17,7 +15,7 @@ require (
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/fxamacker/cbor v1.5.1
 	github.com/go-logr/logr v0.4.0 // indirect
-	github.com/gofrs/uuid v3.3.0+incompatible // indirect
+	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-cmp v0.5.6
@@ -82,6 +80,8 @@ require (
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/alessio/shellescape v1.4.1 // indirect
+	github.com/cucumber/gherkin-go/v19 v19.0.3 // indirect
+	github.com/cucumber/messages-go/v16 v16.0.1 // indirect
 	github.com/evanphx/json-patch/v5 v5.2.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/mattn/go-isatty v0.0.12 // indirect
