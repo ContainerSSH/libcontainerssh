@@ -86,12 +86,13 @@ func (s *serverImpl) RunWithLifecycle(lifecycle service.Lifecycle) error {
 		s.wg.Add(1)
 		go s.handleConnection(tcpConn)
 	}
+
 	lifecycle.Stopping()
 	s.shuttingDown = true
 	allClientsExited := make(chan struct{})
 	shutdownHandlerExited := make(chan struct{}, 1)
+	s.disconnectClients(lifecycle, allClientsExited)
 	go s.shutdownHandlers.Shutdown(lifecycle.ShutdownContext())
-	go s.disconnectClients(lifecycle, allClientsExited)
 	go s.shutdownHandler(lifecycle, shutdownHandlerExited)
 
 	s.wg.Wait()
@@ -322,6 +323,7 @@ func (s *serverImpl) createConfiguration(
 		ServerVersion:               s.cfg.ServerVersion.String(),
 		BannerCallback:              func(conn ssh.ConnMetadata) string { return s.cfg.Banner },
 	}
+
 	for _, key := range s.hostKeys {
 		serverConfig.AddHostKey(key)
 	}

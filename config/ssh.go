@@ -43,6 +43,10 @@ type SSHConfig struct {
 	// allowed to be sent without a response being received. If this number
 	// is exceeded the connection is considered dead
 	ClientAliveCountMax int `json:"clientAliveCountMax" yaml:"clientAliveCountMax" default:"3" comment:"Maximum number of failed keepalives"`
+	// GracefulTerminationDeadline is the amount of time ContainerSSH will
+	// wait after receiving a SIGTERM for all the clients to disconnect.
+	// After this duraction all connections are forcefully terminated.
+	GracefulTerminationDeadline time.Duration `json:"gracefulTerminationDeadline" yaml:"gracefulTerminationDeadline" default:"0"`
 }
 
 // GenerateHostKey generates a random host key and adds it to SSHConfig
