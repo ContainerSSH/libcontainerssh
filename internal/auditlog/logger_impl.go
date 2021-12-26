@@ -156,7 +156,7 @@ func (l *loggerConnection) OnAuthPasswordBackendError(username string, password 
 	})
 }
 
-func (l *loggerConnection) OnAuthPubKey(username string, pubKey string) {
+func (l *loggerConnection) OnAuthPubKey(username string, pubKey string, caCert *message.CACertificate) {
 	l.log(message.Message{
 		ConnectionID: l.connectionID,
 		Timestamp:    time.Now().UnixNano(),
@@ -164,6 +164,7 @@ func (l *loggerConnection) OnAuthPubKey(username string, pubKey string) {
 		Payload: message.PayloadAuthPubKey{
 			Username: username,
 			Key:      pubKey,
+			CACert:   caCert,
 		},
 		ChannelID: nil,
 	})

@@ -6,6 +6,7 @@ import (
 	"net"
 	"strings"
 
+	"github.com/containerssh/libcontainerssh/auth"
 	"github.com/containerssh/libcontainerssh/log"
 	"github.com/containerssh/libcontainerssh/message"
 )
@@ -48,7 +49,7 @@ func (o *oauth2Client) Password(_ string, _ []byte, _ string, _ net.IP) Authenti
 	), nil}
 }
 
-func (o *oauth2Client) PubKey(_ string, _ string, _ string, _ net.IP) AuthenticationContext {
+func (o *oauth2Client) PubKey(_ string, _ string, _ string, _ net.IP, _ *auth.CACertificate) AuthenticationContext {
 	return &oauth2Context{false, nil, message.UserMessage(
 		message.EAuthUnsupported,
 		"Public key authentication is not available.",

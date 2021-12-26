@@ -143,11 +143,7 @@ func (d *dummyBackendHandler) OnAuthPassword(_ string, _ []byte, _ string) (
 	return d.authResponse, nil, nil
 }
 
-func (d *dummyBackendHandler) OnAuthPubKey(_ string, _ string, _ string) (
-	response sshserver.AuthResponse,
-	metadata map[string]string,
-	reason error,
-) {
+func (d *dummyBackendHandler) OnAuthPubKey(_ string, _ string, _ string, _ *sshserver.CACertificate) (response sshserver.AuthResponse, metadata map[string]string, reason error) {
 	return d.authResponse, nil, nil
 }
 

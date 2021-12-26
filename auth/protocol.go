@@ -1,5 +1,7 @@
 package auth
 
+import "time"
+
 // PasswordAuthRequest is an authentication request for password authentication.
 //
 // swagger:model PasswordAuthRequest
@@ -58,6 +60,13 @@ type PublicKeyAuthRequest struct {
 	//
 	// required: true
 	PublicKey string `json:"publicKey"`
+
+	// CACertificate contains information about the SSH certificate presented by a connecting client. This certificate
+	// is not an SSL/TLS/x509 certificate and has a much simpler structure. However, this can be used to verify if the
+	// connecting client belongs to an organization.
+	//
+	// required: false
+	CACertificate *CACertificate `json:"caCertificate,omitempty"`
 }
 
 // ResponseBody is a response to authentication requests.
@@ -84,4 +93,23 @@ type Response struct {
 	//
 	// in: body
 	ResponseBody
+}
+
+// CACertificate contains information about the SSH certificate presented by a connecting client. This certificate
+// is not an SSL/TLS/x509 certificate and has a much simpler structure. However, this can be used to verify if the
+// connecting client belongs to an organization.
+//
+// swagger:model CACertificate
+type CACertificate struct {
+	// PublicKey contains the public key of the CA signing the public key presented in the OpenSSH authorized key
+	// format.
+	PublicKey string `json:"key"`
+	// KeyID contains an identifier for the key.
+	KeyID string `json:"keyID"`
+	// ValidPrincipals contains a list of principals for which this CA certificate is valid.
+	ValidPrincipals []string `json:"validPrincipals"`
+	// ValidAfter contains the time after which this certificate is valid.
+	ValidAfter time.Time `json:"validAfter"`
+	// ValidBefore contains the time when this certificate expires.
+	ValidBefore time.Time `json:"validBefore"`
 }

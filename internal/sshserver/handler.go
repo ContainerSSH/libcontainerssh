@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"time"
 
 	message2 "github.com/containerssh/libcontainerssh/message"
 	"golang.org/x/crypto/ssh"
@@ -91,6 +92,21 @@ func (k *KeyboardInteractiveAnswers) GetByQuestionText(question string) (string,
 	return "", fmt.Errorf("no answer for question")
 }
 
+// CACertificate is an SSH certificate presented by a client to verify their key against a CA.
+type CACertificate struct {
+	// PublicKey contains the public key of the CA signing the public key presented in the OpenSSH authorized key
+	// format.
+	PublicKey string `json:"key"`
+	// KeyID contains an identifier for the key.
+	KeyID string `json:"keyID"`
+	// ValidPrincipals contains a list of principals for which this CA certificate is valid.
+	ValidPrincipals []string `json:"validPrincipals"`
+	// ValidAfter contains the time after which this certificate is valid. This may be empty.
+	ValidAfter time.Time `json:"validAfter"`
+	// ValidBefore contains the time when this certificate expires. This may be empty.
+	ValidBefore time.Time `json:"validBefore"`
+}
+
 // NetworkConnectionHandler is an object that is used to represent the underlying network connection and the SSH
 // handshake.
 type NetworkConnectionHandler interface {
@@ -98,10 +114,10 @@ type NetworkConnectionHandler interface {
 	//                AuthResponse and may supply error as a reason description.
 	OnAuthPassword(username string, password []byte, clientVersion string) (response AuthResponse, metadata map[string]string, reason error)
 
-	// OnAuthPassword is called when a user attempts a pubkey authentication. The implementation must always supply
-	//                AuthResponse and may supply error as a reason description. The pubKey parameter is an SSH key in
-	//               the form of "ssh-rsa KEY HERE".
-	OnAuthPubKey(username string, pubKey string, clientVersion string) (response AuthResponse, metadata map[string]string, reason error)
+	// OnAuthPubKey is called when a user attempts a pubkey authentication. The implementation must always supply
+	// AuthResponse and may supply error as a reason description. The pubKey parameter is an SSH key in
+	// the form of "ssh-rsa KEY HERE".
+	OnAuthPubKey(username string, pubKey string, clientVersion string, caKey *CACertificate) (response AuthResponse, metadata map[string]string, reason error)
 
 	// OnAuthKeyboardInteractive is a callback for interactive authentication. The implementer will be passed a callback
 	// function that can be used to issue challenges to the user. These challenges can, but do not have to contain

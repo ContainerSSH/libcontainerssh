@@ -34,7 +34,7 @@ func (n *networkHandler) OnAuthPassword(_ string, _ []byte, _ string) (sshserver
 	return sshserver.AuthResponseUnavailable, nil, fmt.Errorf("docker does not support authentication")
 }
 
-func (n *networkHandler) OnAuthPubKey(_ string, _ string, _ string) (sshserver.AuthResponse, map[string]string, error) {
+func (n *networkHandler) OnAuthPubKey(_ string, _ string, _ string, _ *sshserver.CACertificate) (sshserver.AuthResponse, map[string]string, error) {
 	return sshserver.AuthResponseUnavailable, nil, fmt.Errorf("docker does not support authentication")
 }
 

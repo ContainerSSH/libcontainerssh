@@ -4,6 +4,7 @@ import (
 	"context"
 	"net"
 
+	protocol "github.com/containerssh/libcontainerssh/auth"
 	"github.com/containerssh/libcontainerssh/internal/sshserver"
 
 	"github.com/containerssh/libcontainerssh/internal/auth"
@@ -113,28 +114,47 @@ func (h *networkConnectionHandler) OnAuthPassword(username string, password []by
 	}
 }
 
-func (h *networkConnectionHandler) OnAuthPubKey(username string, pubKey string, clientVersion string) (response sshserver.AuthResponse, metadata map[string]string, reason error) {
+func (h *networkConnectionHandler) OnAuthPubKey(
+	username string,
+	pubKey string,
+	clientVersion string,
+	caCert *sshserver.CACertificate,
+) (response sshserver.AuthResponse, metadata map[string]string, reason error) {
 	if h.authContext != nil {
 		h.authContext.OnDisconnect()
 	}
-	authContext := h.authClient.PubKey(username, pubKey, h.connectionID, h.ip)
+	convertedCACert := convertCACert(caCert)
+	authContext := h.authClient.PubKey(username, pubKey, h.connectionID, h.ip, convertedCACert)
 	h.authContext = authContext
 	if !authContext.Success() {
 		if authContext.Error() != nil {
 			if h.behavior == BehaviorPassthroughOnUnavailable {
-				return h.backend.OnAuthPubKey(username, pubKey, clientVersion)
+				return h.backend.OnAuthPubKey(username, pubKey, clientVersion, caCert)
 			}
 			return sshserver.AuthResponseUnavailable, authContext.Metadata(), authContext.Error()
 		}
 		if h.behavior == BehaviorPassthroughOnFailure {
-			return h.backend.OnAuthPubKey(username, pubKey, clientVersion)
+			return h.backend.OnAuthPubKey(username, pubKey, clientVersion, caCert)
 		}
 		return sshserver.AuthResponseFailure, authContext.Metadata(), authContext.Error()
 	}
 	if h.behavior == BehaviorPassthroughOnSuccess {
-		return h.backend.OnAuthPubKey(username, pubKey, clientVersion)
+		return h.backend.OnAuthPubKey(username, pubKey, clientVersion, caCert)
 	}
 	return sshserver.AuthResponseSuccess, authContext.Metadata(), authContext.Error()
+}
+
+func convertCACert(cert *sshserver.CACertificate) *protocol.CACertificate {
+	if cert == nil {
+		return nil
+	}
+	return &protocol.CACertificate{
+		PublicKey:       cert.PublicKey,
+		KeyID:           cert.KeyID,
+		ValidPrincipals: cert.ValidPrincipals,
+		ValidAfter:      cert.ValidAfter,
+		ValidBefore:     cert.ValidBefore,
+	}
 }
 
 func (h *networkConnectionHandler) OnAuthKeyboardInteractive(

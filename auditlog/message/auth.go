@@ -36,14 +36,21 @@ func (p PayloadAuthPasswordBackendError) Equals(other Payload) bool {
 
 // PayloadAuthPubKey is a payload for a public key based authentication.
 type PayloadAuthPubKey struct {
-	Username string `json:"username" yaml:"username"`
-	Key      string `json:"key" yaml:"key"`
+	Username string         `json:"username" yaml:"username"`
+	Key      string         `json:"key" yaml:"key"`
+	CACert   *CACertificate `json:"caCertificate" yaml:"caCertificate"`
 }
 
 // Equals compares two PayloadAuthPubKey payloads.
 func (p PayloadAuthPubKey) Equals(other Payload) bool {
 	p2, ok := other.(PayloadAuthPubKey)
 	if !ok {
+		return false
+	}
+	if p.CACert == nil && p2.CACert != nil || p.CACert != nil && p.CACert == nil {
+		return false
+	}
+	if p.CACert != nil && !p.CACert.Equals(p2.CACert) {
 		return false
 	}
 	return p.Username == p2.Username && p.Key == p2.Key

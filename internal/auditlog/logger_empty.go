@@ -73,7 +73,7 @@ func (e *empty) OnAuthPasswordFailed(_ string, _ []byte) {}
 
 func (e *empty) OnAuthPasswordBackendError(_ string, _ []byte, _ string) {}
 
-func (e *empty) OnAuthPubKey(_ string, _ string) {}
+func (e *empty) OnAuthPubKey(_ string, _ string, _ *message.CACertificate) {}
 
 func (e *empty) OnAuthPubKeySuccess(_ string, _ string) {}
 

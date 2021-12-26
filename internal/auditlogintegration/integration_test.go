@@ -316,11 +316,7 @@ func (b *backendHandler) OnAuthPassword(username string, _ []byte, _ string) (
 	return sshserver.AuthResponseFailure, nil, nil
 }
 
-func (b *backendHandler) OnAuthPubKey(_ string, _ string, _ string) (
-	response sshserver.AuthResponse,
-	metadata map[string]string,
-	reason error,
-) {
+func (b *backendHandler) OnAuthPubKey(username string, pubKey string, clientVersion string, caKey string) (response sshserver.AuthResponse, metadata map[string]string, reason error) {
 	return sshserver.AuthResponseFailure, nil, nil
 }
 

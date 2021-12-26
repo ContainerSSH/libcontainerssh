@@ -34,7 +34,7 @@ type Connection interface {
 	OnAuthPasswordBackendError(username string, password []byte, reason string)
 
 	// OnAuthPubKey creates an audit log message for an authentication attempt with public key.
-	OnAuthPubKey(username string, pubKey string)
+	OnAuthPubKey(username string, pubKey string, caKey *message.CACertificate)
 	// OnAuthPubKeySuccess creates an audit log message for a successful public key authentication.
 	OnAuthPubKeySuccess(username string, pubKey string)
 	// OnAuthPubKeyFailed creates an audit log message for a failed public key authentication.

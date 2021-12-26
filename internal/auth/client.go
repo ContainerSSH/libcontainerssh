@@ -2,6 +2,8 @@ package auth
 
 import (
 	"net"
+
+	"github.com/containerssh/libcontainerssh/auth"
 )
 
 // AuthenticationContext holds the results of an authentication.
@@ -38,6 +40,7 @@ type Client interface {
 		pubKey string,
 		connectionID string,
 		remoteAddr net.IP,
+		caPubKey *auth.CACertificate,
 	) AuthenticationContext
 
 	// KeyboardInteractive is a method to post a series of questions to the user and receive answers.

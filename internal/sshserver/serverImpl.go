@@ -6,6 +6,7 @@ import (
 	"net"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/containerssh/libcontainerssh/config"
 	ssh2 "github.com/containerssh/libcontainerssh/internal/ssh"
@@ -223,10 +224,21 @@ func (s *serverImpl) createPubKeyAuthenticator(
 ) func(conn ssh.ConnMetadata, pubKey ssh.PublicKey) (*ssh.Permissions, map[string]string, error) {
 	return func(conn ssh.ConnMetadata, pubKey ssh.PublicKey) (*ssh.Permissions, map[string]string, error) {
 		authorizedKey := strings.TrimSpace(string(ssh.MarshalAuthorizedKey(pubKey)))
+		var caCert *CACertificate
+		if crt, ok := pubKey.(*ssh.Certificate); ok {
+			caCert = &CACertificate{
+				PublicKey:       string(ssh.MarshalAuthorizedKey(crt.SignatureKey)),
+				KeyID:           crt.KeyId,
+				ValidPrincipals: crt.ValidPrincipals,
+				ValidAfter:      time.Unix(int64(crt.ValidAfter), 0),
+				ValidBefore:     time.Unix(int64(crt.ValidBefore), 0),
+			}
+		}
 		authResponse, metadata, err := handlerNetworkConnection.OnAuthPubKey(
 			conn.User(),
 			authorizedKey,
 			string(conn.ClientVersion()),
+			caCert,
 		)
 		//goland:noinspection GoNilness
 		switch authResponse {

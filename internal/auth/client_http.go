@@ -95,12 +95,7 @@ func (client *httpAuthClient) Password(
 	return client.processAuthWithRetry(username, method, authType, connectionID, url, authRequest, remoteAddr)
 }
 
-func (client *httpAuthClient) PubKey(
-	username string,
-	pubKey string,
-	connectionID string,
-	remoteAddr net.IP,
-) AuthenticationContext {
+func (client *httpAuthClient) PubKey(username string, pubKey string, connectionID string, remoteAddr net.IP, caPubKey *auth.CACertificate) AuthenticationContext {
 	if !client.enablePubKey {
 		err := message.UserMessage(
 			message.EAuthDisabled,
@@ -117,6 +112,7 @@ func (client *httpAuthClient) PubKey(
 		ConnectionID:  connectionID,
 		SessionID:     connectionID,
 		PublicKey:     pubKey,
+		CACertificate: caPubKey,
 	}
 	method := "Public key"
 	authType := "pubkey"

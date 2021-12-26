@@ -72,7 +72,7 @@ func (n *networkHandler) authResponse() (sshserver.AuthResponse, map[string]stri
 	}
 }
 
-func (n *networkHandler) OnAuthPubKey(_ string, _ string, _ string) (response sshserver.AuthResponse, metadata map[string]string, reason error) {
+func (n *networkHandler) OnAuthPubKey(_ string, _ string, _ string, _ *sshserver.CACertificate) (response sshserver.AuthResponse, metadata map[string]string, reason error) {
 	return n.authResponse()
 }
 

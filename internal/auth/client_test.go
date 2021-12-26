@@ -88,6 +88,7 @@ func TestPubKeyDisabled(t *testing.T) {
 		"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDP39LqSomHi4kicGADA3XVQoYxzNkvrBLOqN5AEEP01p0TZ39LXa6FdB4Pmvg8h51c+BNLoxpYrTk4UibMD87OPKYYXrNmLvq0GwjMPYpzoICevAJm+/2sDVlK9sXT93Fkin+tei+Evgf/hQK0xN+HXqP8dz8SWSXeWjBv588eHHCdrV+0FlZLXH+9D18tD4BNPHe9iJLpeeH6gsvQBvArXcIEQVvHIo1cCcsy28ymUFndG55LdOaTCA+pcfHLmRtL8HO2mI2Qc/0HBSc2d1gb3lHAnmdMT82K58OjRp9Tegc5hVuKVE+hkmNjfo3f1mVHsNu6JYLxRngnbJ20QdzuKcPb3pRMty+ggRgEQExvgl1pC3OVcgyc8YX1eXiyhYy0kXT/Jg++AcaIC1Xk/hDfB0T7WxCO0Wwd4KSjKr79tIxM/m4jP2K1Hk4yAnT7mZQ0GjdphLLuDk3yt8R809SPuzkPCXBM0sL6FrqT2GVDNihN2pBh1MyuUt7S8ZXpuW0=",
 		"asdf",
 		net.ParseIP("127.0.0.1"),
+		nil,
 	)
 	if authContext.Success() {
 		t.Fatal("Public key authentication method resulted in successful authentication.")

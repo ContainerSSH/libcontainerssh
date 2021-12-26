@@ -83,17 +83,22 @@ func (n *networkConnectionHandler) OnAuthPassword(
 	return response, metadata, reason
 }
 
-func (n *networkConnectionHandler) OnAuthPubKey(
-	username string,
-	pubKey string,
-	clientVersion string,
-) (
-	response sshserver.AuthResponse,
-	metadata map[string]string,
-	reason error,
-) {
-	n.audit.OnAuthPubKey(username, pubKey)
-	response, metadata, reason = n.backend.OnAuthPubKey(username, pubKey, clientVersion)
+func convertCACertificate(caCert *sshserver.CACertificate) *message.CACertificate {
+	if caCert == nil {
+		return nil
+	}
+	return &message.CACertificate{
+		PublicKey:       caCert.PublicKey,
+		KeyID:           caCert.KeyID,
+		ValidPrincipals: caCert.ValidPrincipals,
+		ValidAfter:      caCert.ValidAfter,
+		ValidBefore:     caCert.ValidBefore,
+	}
+}
+
+func (n *networkConnectionHandler) OnAuthPubKey(username string, pubKey string, clientVersion string, caCert *sshserver.CACertificate) (response sshserver.AuthResponse, metadata map[string]string, reason error) {
+	n.audit.OnAuthPubKey(username, pubKey, convertCACertificate(caCert))
+	response, metadata, reason = n.backend.OnAuthPubKey(username, pubKey, clientVersion, caCert)
 	switch response {
 	case sshserver.AuthResponseSuccess:
 		n.audit.OnAuthPubKeySuccess(username, pubKey)
