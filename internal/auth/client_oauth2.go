@@ -8,6 +8,7 @@ import (
 
 	"github.com/containerssh/libcontainerssh/log"
 	"github.com/containerssh/libcontainerssh/message"
+	"github.com/containerssh/libcontainerssh/ssh"
 )
 
 type oauth2Client struct {
@@ -48,7 +49,7 @@ func (o *oauth2Client) Password(_ string, _ []byte, _ string, _ net.IP) Authenti
 	), nil}
 }
 
-func (o *oauth2Client) PubKey(_ string, _ string, _ string, _ net.IP) AuthenticationContext {
+func (o *oauth2Client) PubKey(username string, pubKey string, connectionID string, remoteAddr net.IP, caPubKey ssh.CACertificate) AuthenticationContext {
 	return &oauth2Context{false, nil, message.UserMessage(
 		message.EAuthUnsupported,
 		"Public key authentication is not available.",

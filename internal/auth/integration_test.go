@@ -99,15 +99,15 @@ func TestAuth(t *testing.T) {
 			assert.Equal(t, false, authenticationContext.Success())
 			assert.Equal(t, float64(1), metricsCollector.GetMetric(auth.MetricNameAuthBackendFailure)[0].Value)
 
-			authenticationContext = client.PubKey("foo", "ssh-rsa asdf", "0123456789ABCDEF", net.ParseIP("127.0.0.1"))
+			authenticationContext = client.PubKey("foo", "ssh-rsa asdf", "0123456789ABCDEF", net.ParseIP("127.0.0.1"), "")
 			assert.Equal(t, nil, authenticationContext.Error())
 			assert.Equal(t, true, authenticationContext.Success())
 
-			authenticationContext = client.PubKey("foo", "ssh-rsa asdx", "0123456789ABCDEF", net.ParseIP("127.0.0.1"))
+			authenticationContext = client.PubKey("foo", "ssh-rsa asdx", "0123456789ABCDEF", net.ParseIP("127.0.0.1"), "")
 			assert.Equal(t, nil, authenticationContext.Error())
 			assert.Equal(t, false, authenticationContext.Success())
 
-			authenticationContext = client.PubKey("crash", "ssh-rsa asdx", "0123456789ABCDEF", net.ParseIP("127.0.0.1"))
+			authenticationContext = client.PubKey("crash", "ssh-rsa asdx", "0123456789ABCDEF", net.ParseIP("127.0.0.1"), "")
 			assert.NotEqual(t, nil, authenticationContext.Error())
 			assert.Equal(t, false, authenticationContext.Success())
 		})

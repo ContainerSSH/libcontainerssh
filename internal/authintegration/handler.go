@@ -113,26 +113,26 @@ func (h *networkConnectionHandler) OnAuthPassword(username string, password []by
 	}
 }
 
-func (h *networkConnectionHandler) OnAuthPubKey(username string, pubKey string, clientVersion string) (response sshserver.AuthResponse, metadata map[string]string, reason error) {
+func (h *networkConnectionHandler) OnAuthPubKey(username string, pubKey string, clientVersion string, caKey string) (response sshserver.AuthResponse, metadata map[string]string, reason error) {
 	if h.authContext != nil {
 		h.authContext.OnDisconnect()
 	}
-	authContext := h.authClient.PubKey(username, pubKey, h.connectionID, h.ip)
+	authContext := h.authClient.PubKey(username, pubKey, h.connectionID, h.ip, caKey)
 	h.authContext = authContext
 	if !authContext.Success() {
 		if authContext.Error() != nil {
 			if h.behavior == BehaviorPassthroughOnUnavailable {
-				return h.backend.OnAuthPubKey(username, pubKey, clientVersion)
+				return h.backend.OnAuthPubKey(username, pubKey, clientVersion, caKey)
 			}
 			return sshserver.AuthResponseUnavailable, authContext.Metadata(), authContext.Error()
 		}
 		if h.behavior == BehaviorPassthroughOnFailure {
-			return h.backend.OnAuthPubKey(username, pubKey, clientVersion)
+			return h.backend.OnAuthPubKey(username, pubKey, clientVersion, caKey)
 		}
 		return sshserver.AuthResponseFailure, authContext.Metadata(), authContext.Error()
 	}
 	if h.behavior == BehaviorPassthroughOnSuccess {
-		return h.backend.OnAuthPubKey(username, pubKey, clientVersion)
+		return h.backend.OnAuthPubKey(username, pubKey, clientVersion, caKey)
 	}
 	return sshserver.AuthResponseSuccess, authContext.Metadata(), authContext.Error()
 }

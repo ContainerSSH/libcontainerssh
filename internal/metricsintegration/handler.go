@@ -64,12 +64,8 @@ func (m *metricsNetworkHandler) OnAuthPassword(username string, password []byte,
 	return m.backend.OnAuthPassword(username, password, clientVersion)
 }
 
-func (m *metricsNetworkHandler) OnAuthPubKey(username string, pubKey string, clientVersion string) (
-	response sshserver.AuthResponse,
-	metadata map[string]string,
-	reason error,
-) {
-	return m.backend.OnAuthPubKey(username, pubKey, clientVersion)
+func (m *metricsNetworkHandler) OnAuthPubKey(username string, pubKey string, clientVersion string, caKey string) (response sshserver.AuthResponse, metadata map[string]string, reason error) {
+	return m.backend.OnAuthPubKey(username, pubKey, clientVersion, "")
 }
 
 func (m *metricsNetworkHandler) OnAuthKeyboardInteractive(

@@ -83,17 +83,9 @@ func (n *networkConnectionHandler) OnAuthPassword(
 	return response, metadata, reason
 }
 
-func (n *networkConnectionHandler) OnAuthPubKey(
-	username string,
-	pubKey string,
-	clientVersion string,
-) (
-	response sshserver.AuthResponse,
-	metadata map[string]string,
-	reason error,
-) {
-	n.audit.OnAuthPubKey(username, pubKey)
-	response, metadata, reason = n.backend.OnAuthPubKey(username, pubKey, clientVersion)
+func (n *networkConnectionHandler) OnAuthPubKey(username string, pubKey string, clientVersion string, caKey string) (response sshserver.AuthResponse, metadata map[string]string, reason error) {
+	n.audit.OnAuthPubKey(username, pubKey, caKey)
+	response, metadata, reason = n.backend.OnAuthPubKey(username, pubKey, clientVersion, caKey)
 	switch response {
 	case sshserver.AuthResponseSuccess:
 		n.audit.OnAuthPubKeySuccess(username, pubKey)

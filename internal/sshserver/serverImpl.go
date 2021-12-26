@@ -223,10 +223,15 @@ func (s *serverImpl) createPubKeyAuthenticator(
 ) func(conn ssh.ConnMetadata, pubKey ssh.PublicKey) (*ssh.Permissions, map[string]string, error) {
 	return func(conn ssh.ConnMetadata, pubKey ssh.PublicKey) (*ssh.Permissions, map[string]string, error) {
 		authorizedKey := strings.TrimSpace(string(ssh.MarshalAuthorizedKey(pubKey)))
+		caKey := ""
+		if crt, ok := pubKey.(*ssh.Certificate); ok {
+			caKey = string(ssh.MarshalAuthorizedKey(crt.SignatureKey))
+		}
 		authResponse, metadata, err := handlerNetworkConnection.OnAuthPubKey(
 			conn.User(),
 			authorizedKey,
 			string(conn.ClientVersion()),
+			caKey,
 		)
 		//goland:noinspection GoNilness
 		switch authResponse {

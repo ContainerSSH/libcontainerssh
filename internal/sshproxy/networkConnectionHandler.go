@@ -41,11 +41,7 @@ func (s *networkConnectionHandler) OnAuthPassword(_ string, _ []byte, _ string) 
 	)
 }
 
-func (s *networkConnectionHandler) OnAuthPubKey(_ string, _ string, _ string) (
-	sshserver.AuthResponse,
-	map[string]string,
-	error,
-) {
+func (s *networkConnectionHandler) OnAuthPubKey(username string, pubKey string, clientVersion string, caKey string) (sshserver.AuthResponse, map[string]string, error) {
 	return sshserver.AuthResponseUnavailable, nil, fmt.Errorf(
 		"ssh proxy does not support authentication",
 	)

@@ -73,7 +73,7 @@ func (t *testAuthenticationNetworkHandler) OnAuthPassword(username string, passw
 	return AuthResponseFailure, nil, ErrAuthenticationFailed
 }
 
-func (t *testAuthenticationNetworkHandler) OnAuthPubKey(username string, pubKey string, clientVersion string) (response AuthResponse, metadata map[string]string, reason error) {
+func (t *testAuthenticationNetworkHandler) OnAuthPubKey(username string, pubKey string, clientVersion string, caKey string) (response AuthResponse, metadata map[string]string, reason error) {
 	for _, user := range t.rootHandler.users {
 		if user.username == username {
 			for _, authorizedKey := range user.authorizedKeys {
