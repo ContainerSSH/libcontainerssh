@@ -98,10 +98,10 @@ type NetworkConnectionHandler interface {
 	//                AuthResponse and may supply error as a reason description.
 	OnAuthPassword(username string, password []byte, clientVersion string) (response AuthResponse, metadata map[string]string, reason error)
 
-	// OnAuthPassword is called when a user attempts a pubkey authentication. The implementation must always supply
-	//                AuthResponse and may supply error as a reason description. The pubKey parameter is an SSH key in
-	//               the form of "ssh-rsa KEY HERE".
-	OnAuthPubKey(username string, pubKey string, clientVersion string) (response AuthResponse, metadata map[string]string, reason error)
+	// OnAuthPubKey is called when a user attempts a pubkey authentication. The implementation must always supply
+	// AuthResponse and may supply error as a reason description. The pubKey parameter is an SSH key in
+	// the form of "ssh-rsa KEY HERE".
+	OnAuthPubKey(username string, pubKey string, clientVersion string, caKey string) (response AuthResponse, metadata map[string]string, reason error)
 
 	// OnAuthKeyboardInteractive is a callback for interactive authentication. The implementer will be passed a callback
 	// function that can be used to issue challenges to the user. These challenges can, but do not have to contain

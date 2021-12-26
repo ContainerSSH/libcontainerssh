@@ -42,12 +42,8 @@ func (n *networkHandler) OnAuthPassword(username string, password []byte, client
 	return n.backend.OnAuthPassword(username, password, clientVersion)
 }
 
-func (n *networkHandler) OnAuthPubKey(username string, pubKey string, clientVersion string) (
-	response sshserver.AuthResponse,
-	metadata map[string]string,
-	reason error,
-) {
-	return n.backend.OnAuthPubKey(username, pubKey, clientVersion)
+func (n *networkHandler) OnAuthPubKey(username string, pubKey string, clientVersion string, caKey string) (response sshserver.AuthResponse, metadata map[string]string, reason error) {
+	return n.backend.OnAuthPubKey(username, pubKey, clientVersion, "")
 }
 
 func (n *networkHandler) OnHandshakeFailed(reason error) {

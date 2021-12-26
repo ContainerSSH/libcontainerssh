@@ -18,7 +18,7 @@ func (a *AbstractNetworkConnectionHandler) OnAuthPassword(_ string, _ []byte, _ 
 // OnAuthPassword is called when a user attempts a pubkey authentication. The implementation must always supply
 //                AuthResponse and may supply error as a reason description. The pubKey parameter is an SSH key in
 //               the form of "ssh-rsa KEY HERE".
-func (a *AbstractNetworkConnectionHandler) OnAuthPubKey(_ string, _ string, _ string) (response AuthResponse, metadata map[string]string, reason error) {
+func (a *AbstractNetworkConnectionHandler) OnAuthPubKey(username string, pubKey string, clientVersion string, caKey string) (response AuthResponse, metadata map[string]string, reason error) {
 	return AuthResponseUnavailable, nil, nil
 }
 

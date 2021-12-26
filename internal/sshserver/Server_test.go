@@ -521,7 +521,7 @@ func (f *fullNetworkConnectionHandler) OnAuthPassword(
 	return sshserver.AuthResponseFailure, nil, fmt.Errorf("authentication failed")
 }
 
-func (f *fullNetworkConnectionHandler) OnAuthPubKey(username string, pubKey string, _ string) (response sshserver.AuthResponse, metadata map[string]string, reason error) {
+func (f *fullNetworkConnectionHandler) OnAuthPubKey(username string, pubKey string, clientVersion string, caKey string) (response sshserver.AuthResponse, metadata map[string]string, reason error) {
 	if storedPubKey, ok := f.handler.pubKeys[username]; ok && storedPubKey == pubKey {
 		return sshserver.AuthResponseSuccess, nil, nil
 	}

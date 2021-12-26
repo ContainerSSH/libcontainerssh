@@ -2,6 +2,8 @@ package auth
 
 import (
 	"net"
+
+	"github.com/containerssh/libcontainerssh/ssh"
 )
 
 // AuthenticationContext holds the results of an authentication.
@@ -33,12 +35,7 @@ type Client interface {
 
 	// PubKey authenticates with a public key from the client. It returns a bool if the authentication as successful
 	// or not. If an error happened while contacting the authentication server it will return an error.
-	PubKey(
-		username string,
-		pubKey string,
-		connectionID string,
-		remoteAddr net.IP,
-	) AuthenticationContext
+	PubKey(username string, pubKey string, connectionID string, remoteAddr net.IP, caPubKey ssh.CACertificate) AuthenticationContext
 
 	// KeyboardInteractive is a method to post a series of questions to the user and receive answers.
 	KeyboardInteractive(

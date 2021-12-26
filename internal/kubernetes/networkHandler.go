@@ -33,7 +33,7 @@ func (n *networkHandler) OnAuthPassword(_ string, _ []byte, _ string) (response 
 	return sshserver.AuthResponseUnavailable, nil, fmt.Errorf("the backend handler does not support authentication")
 }
 
-func (n *networkHandler) OnAuthPubKey(_ string, _ string, _ string) (response sshserver.AuthResponse, metadata map[string]string, reason error) {
+func (n *networkHandler) OnAuthPubKey(username string, pubKey string, clientVersion string, caKey string) (response sshserver.AuthResponse, metadata map[string]string, reason error) {
 	return sshserver.AuthResponseUnavailable, nil, fmt.Errorf("the backend handler does not support authentication")
 }
 

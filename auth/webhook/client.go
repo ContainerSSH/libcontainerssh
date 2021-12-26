@@ -22,11 +22,22 @@ type Client interface {
 
 	// PubKey authenticates with a public key from the client. It returns a bool if the authentication as successful
 	// or not. If an error happened while contacting the authentication server it will return an error.
+	//
+	// The parameters are as follows:
+	//
+	// - username is the username provided by the connecting client.
+	// - pubKey is the public key offered by the connecting client. The client may offer multiple keys which will be
+	// presented by calling this function multiple times.
+	// - connectionID is an opaque random string representing this SSH connection across multiple webhooks and logs.
+	// - remoteAddr is the IP address of the connecting client.
+	// - caPubKey is the verified public key of the SSH CA certificate offered by the client. If no CA certificate
+	// was offered this string is empty.
 	PubKey(
 		username string,
 		pubKey string,
 		connectionID string,
 		remoteAddr net.IP,
+		caPubKey string,
 	) AuthenticationContext
 }
 
@@ -79,6 +90,7 @@ func (a authClientWrapper) PubKey(
 	pubKey string,
 	connectionID string,
 	remoteAddr net.IP,
+	caPubKey string,
 ) AuthenticationContext {
-	return a.c.PubKey(username, pubKey, connectionID, remoteAddr)
+	return a.c.PubKey(username, pubKey, connectionID, remoteAddr, caPubKey)
 }
