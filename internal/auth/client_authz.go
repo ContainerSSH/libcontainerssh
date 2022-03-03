@@ -72,7 +72,13 @@ func (client *httpAuthzClient) KeyboardInteractive(
 		return auth
 	}
 
-	return client.processAuthzWithRetry(username, username, connectionID, remoteAddr)
+	authzCtx := client.processAuthzWithRetry(username, username, connectionID, remoteAddr)
+	if !authzCtx.Success() {
+		return authzCtx
+	}
+
+	auth.Metadata().Merge(authzCtx.Metadata())
+	return auth
 }
 
 func (client *httpAuthzClient) Password(
@@ -86,7 +92,13 @@ func (client *httpAuthzClient) Password(
 		return auth
 	}
 
-	return client.processAuthzWithRetry(username, username, connectionID, remoteAddr)
+	authzCtx := client.processAuthzWithRetry(username, username, connectionID, remoteAddr)
+	if !authzCtx.Success() {
+		return authzCtx
+	}
+
+	auth.Metadata().Merge(authzCtx.Metadata())
+	return auth
 }
 
 func (client *httpAuthzClient) PubKey(
@@ -100,7 +112,13 @@ func (client *httpAuthzClient) PubKey(
 		return auth
 	}
 
-	return client.processAuthzWithRetry(username, username, connectionID, remoteAddr)
+	authzCtx := client.processAuthzWithRetry(username, username, connectionID, remoteAddr)
+	if !authzCtx.Success() {
+		return authzCtx
+	}
+
+	auth.Metadata().Merge(authzCtx.Metadata())
+	return auth
 }
 
 func (s *authzContext) AcceptSecContext(token []byte) (outputToken []byte, srcName string, needContinue bool, err error) {
