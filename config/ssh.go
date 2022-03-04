@@ -25,6 +25,9 @@ type SSHConfig struct {
 	//               See https://tools.ietf.org/html/rfc4253#page-4 section 4.2. Protocol Version Exchange
 	//               The trailing CR and LF characters should NOT be added to this string.
 	ServerVersion SSHServerVersion `json:"serverVersion" yaml:"serverVersion" default:"SSH-2.0-ContainerSSH"`
+	// AllowedProxies is a list of IP addresses or CIDR ranges that are allowed to use the
+	// PROXY protocol to override the connection originator IP address.
+	AllowedProxies []string `json:"allowedProxies" yaml:"allowedProxies"`
 	// Ciphers are the ciphers offered to the client.
 	Ciphers SSHCipherList `json:"ciphers" yaml:"ciphers" default:"[\"chacha20-poly1305@openssh.com\",\"aes256-gcm@openssh.com\",\"aes128-gcm@openssh.com\",\"aes256-ctr\",\"aes192-ctr\",\"aes128-ctr\"]" comment:"SSHCipher suites to use"`
 	// KexAlgorithms are the key exchange algorithms offered to the client.

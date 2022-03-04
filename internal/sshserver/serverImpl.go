@@ -15,6 +15,7 @@ import (
 	messageCodes "github.com/containerssh/libcontainerssh/message"
 	"github.com/containerssh/libcontainerssh/service"
 	"golang.org/x/crypto/ssh"
+	"github.com/pires/go-proxyproto"
 )
 
 type serverImpl struct {
@@ -54,10 +55,19 @@ func (s *serverImpl) RunWithLifecycle(lifecycle service.Lifecycle) error {
 		Control: s.socketControl,
 	}
 
+	useProxy := len(s.cfg.AllowedProxies) > 0
+
 	netListener, err := listenConfig.Listen(lifecycle.Context(), "tcp", s.cfg.Listen)
 	if err != nil {
 		s.lock.Unlock()
 		return messageCodes.Wrap(err, messageCodes.ESSHStartFailed, "failed to start SSH server on %s", s.cfg.Listen)
+	}
+	if useProxy {
+		policy := proxyproto.MustStrictWhiteListPolicy(s.cfg.AllowedProxies)
+		netListener = &proxyproto.Listener{
+			Listener: netListener,
+			Policy: policy,
+		}
 	}
 	s.listenSocket = netListener
 	s.lock.Unlock()
@@ -84,7 +94,13 @@ func (s *serverImpl) RunWithLifecycle(lifecycle service.Lifecycle) error {
 			break
 		}
 		s.wg.Add(1)
-		go s.handleConnection(tcpConn)
+		logger := s.logger
+		if useProxy {
+			proxyConn := tcpConn.(*proxyproto.Conn)
+			proxyIp := proxyConn.Raw().RemoteAddr()
+			logger = logger.WithLabel("fromProxy", proxyIp.(*net.TCPAddr).IP.String())
+		}
+		go s.handleConnection(logger, tcpConn)
 	}
 	lifecycle.Stopping()
 	s.shuttingDown = true
@@ -501,10 +517,10 @@ func (s *serverImpl) createPasswordCallback(
 	return passwordCallback
 }
 
-func (s *serverImpl) handleConnection(conn net.Conn) {
+func (s *serverImpl) handleConnection(logger log.Logger, conn net.Conn) {
 	addr := conn.RemoteAddr().(*net.TCPAddr)
 	connectionID := GenerateConnectionID()
-	logger := s.logger.
+	logger = logger.
 		WithLabel("remoteAddr", addr.IP.String()).
 		WithLabel("connectionId", connectionID)
 	handlerNetworkConnection, err := s.handler.OnNetworkConnection(*addr, connectionID)
