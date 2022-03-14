@@ -42,9 +42,6 @@ func (e *encoder) Encode(messages <-chan message.Message, storage storage.Writer
 	var encoder *cbor.Encoder
 	gzipHandle = gzip.NewWriter(storage)
 	encoder = cbor.NewEncoder(gzipHandle, cbor.EncOptions{})
-	if err := encoder.StartIndefiniteArray(); err != nil {
-		return fmt.Errorf("failed to start infinite array (%w)", err)
-	}
 
 	startTime := int64(0)
 	var ip = ""
@@ -62,12 +59,12 @@ func (e *encoder) Encode(messages <-chan message.Message, storage storage.Writer
 		if err := encoder.Encode(&msg); err != nil {
 			return fmt.Errorf("failed to encode audit log message (%w)", err)
 		}
+		if err := gzipHandle.Flush(); err != nil {
+			return fmt.Errorf("failed to flush audit log gzip stream (%w)", err)
+		}
 		if msg.MessageType == message.TypeDisconnect {
 			break
 		}
-	}
-	if err := encoder.EndIndefinite(); err != nil {
-		return fmt.Errorf("failed to end audit log infinite array (%w)", err)
 	}
 	if err := gzipHandle.Flush(); err != nil {
 		return fmt.Errorf("failed to flush audit log gzip stream (%w)", err)

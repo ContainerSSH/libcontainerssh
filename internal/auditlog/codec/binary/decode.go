@@ -44,18 +44,17 @@ func (d *decoder) Decode(reader io.Reader) (<-chan message.Message, <-chan error
 
 	cborReader := cbor.NewDecoder(gzipReader)
 
-	var messages []decodedMessage
-
 	go func() {
-		if err = cborReader.Decode(&messages); err != nil {
-			errors <- fmt.Errorf("failed to decode messages (%w)", err)
-			close(result)
-			close(errors)
-			return
-		}
-
-		for _, v := range messages {
-			decodedMessage, err := decodeMessage(v)
+		for {
+			var message decodedMessage
+			if err = cborReader.Decode(&message); err != nil {
+				if err == io.EOF {
+					break
+				}
+				errors <- fmt.Errorf("failed to decode messages (%w)", err)
+				break
+			}
+			decodedMessage, err := decodeMessage(message)
 			if err != nil {
 				errors <- err
 			} else {
