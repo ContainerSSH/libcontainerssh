@@ -16,17 +16,10 @@ func TestConnectionSetup(t *testing.T) {
 	fromClientReader, fromClientWriter := io.Pipe()
 	toClientReader, toClientWriter := io.Pipe()
 
-	clientCtx := proto.ForwardCtx{
-		FromBackend: toClientReader,
-		ToBackend:   fromClientWriter,
-		Logger:      log,
-	}
 
-	serverCtx := proto.ForwardCtx{
-		FromBackend: fromClientReader,
-		ToBackend:   toClientWriter,
-		Logger:      log,
-	}
+	clientCtx := proto.NewForwardCtx(toClientReader, fromClientWriter, log)
+
+	serverCtx := proto.NewForwardCtx(fromClientReader, toClientWriter, log)
 
 	closeChan := make(chan struct{})
 

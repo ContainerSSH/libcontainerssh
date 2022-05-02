@@ -27,10 +27,11 @@ const (
 	TypeHandshakeFailed             Type = 198 // TypeHandshakeFailed indicates that the handshake has failed.
 	TypeHandshakeSuccessful         Type = 199 // TypeHandshakeSuccessful indicates that the handshake and authentication was successful.
 	TypeGlobalRequestUnknown        Type = 200 // TypeGlobalRequestUnknown describes a message when a global (non-channel) request was sent that was not recognized.
-	TypeRequestReverseForward       Type = 201 // TypeRequestReverseForward describes a request from the client to forward a remote port
-	TypeRequestCancelReverseForward Type = 202 // TypeRequestReverseForward describes a request from the client to stop forwarding a remote port
-	TypeRequestStreamLocal          Type = 203 // TypeRequestStreamLocal describes a request from the client to forward a remote socket
-	TypeRequestCancelStreamLocal    Type = 204 // TypeRequestCancelStreamLocal describes a request from the client to stop forwarding a remote socket
+	TypeGlobalRequestDecodeFailed   Type = 201 // TypeGlobalRequestDecodeFailed describes a message when a global (non-channel) request was recognized but could not be decoded
+	TypeRequestReverseForward       Type = 202 // TypeRequestReverseForward describes a request from the client to forward a remote port
+	TypeRequestCancelReverseForward Type = 203 // TypeRequestReverseForward describes a request from the client to stop forwarding a remote port
+	TypeRequestStreamLocal          Type = 204 // TypeRequestStreamLocal describes a request from the client to forward a remote socket
+	TypeRequestCancelStreamLocal    Type = 205 // TypeRequestCancelStreamLocal describes a request from the client to stop forwarding a remote socket
 
 	TypeNewChannel                   Type = 300 // TypeNewChannel describes a message that indicates a new channel request.
 	TypeNewChannelSuccessful         Type = 301 // TypeNewChannelSuccessful describes a message when the new channel request was successful.
@@ -84,6 +85,7 @@ var typeToID = map[Type]string{
 	TypeAuthKeyboardInteractiveBackendError: "auth_keyboard_interactive_backend_error",
 
 	TypeGlobalRequestUnknown:         "global_request_unknown",
+	TypeGlobalRequestDecodeFailed:    "global_request_decode_failed",
 	TypeRequestReverseForward:        "forward_tcpip",
 	TypeRequestCancelReverseForward:  "cancel_forward_tcpip",
 	TypeRequestStreamLocal:           "forward_streamlocal",
@@ -136,6 +138,7 @@ var typeToName = map[Type]string{
 	TypeAuthKeyboardInteractiveBackendError: "Keyboard-interactive authentication backend error",
 
 	TypeGlobalRequestUnknown:         "Unknown global request",
+	TypeGlobalRequestDecodeFailed:    "Failed to decode global request",
 	TypeRequestReverseForward:        "Request reverse port forwarding",
 	TypeRequestCancelReverseForward:  "Request to stop reverse port forwarding",
 	TypeRequestStreamLocal:           "Request reverse socket forwarding",
@@ -189,6 +192,7 @@ var messageTypeToPayload = map[Type]Payload{
 	TypeAuthPubKeyBackendError: PayloadAuthPubKeyBackendError{},
 
 	TypeGlobalRequestUnknown:         PayloadGlobalRequestUnknown{},
+	TypeGlobalRequestDecodeFailed:    PayloadGlobalRequestDecodeFailed{},
 	TypeRequestReverseForward:        PayloadRequestReverseForward{},
 	TypeRequestCancelReverseForward:  PayloadRequestReverseForward{},
 	TypeRequestStreamLocal:           PayloadRequestStreamLocal{},

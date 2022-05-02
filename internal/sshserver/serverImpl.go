@@ -670,15 +670,14 @@ func (s *serverImpl) handleGlobalRequest(authenticatedMetadata metadata.Connecti
 				req.Type,
 			),
 		)
-		// TODO: Update
-		//sessionChannel.OnFailedDecodeChannelRequest(requestID, request.Type, request.Payload, err)
+		connection.OnFailedDecodeGlobalRequest(requestID, req.Type, req.Payload, err)
 		reply(false, "failed to unmarshal payload", nil)
 		return
 	}
-	// TODO: Update logs
+
 	logger.Debug(
 		messageCodes.NewMessage(
-			messageCodes.MSSHChannelRequest,
+			messageCodes.MSSHGlobalRequest,
 			"%s global request from client",
 			req.Type,
 		).Label("RequestType", req.Type),
@@ -692,7 +691,7 @@ func (s *serverImpl) handleGlobalRequest(authenticatedMetadata metadata.Connecti
 	); err != nil {
 		logger.Debug(
 			messageCodes.NewMessage(
-				messageCodes.MSSHChannelRequestFailed,
+				messageCodes.MSSHGlobalRequestFailed,
 				"%s global request from client failed",
 				req.Type,
 			).Label("RequestType", req.Type),
@@ -702,7 +701,7 @@ func (s *serverImpl) handleGlobalRequest(authenticatedMetadata metadata.Connecti
 	}
 	logger.Debug(
 		messageCodes.NewMessage(
-			messageCodes.MSSHChannelRequestSuccessful,
+			messageCodes.MSSHGlobalRequestSuccessful,
 			"%s global request from client successful",
 			req.Type,
 		).Label("RequestType", req.Type),
@@ -767,7 +766,7 @@ func (s *serverImpl) handleGlobalRequests(
 		requestID := s.nextGlobalRequestID
 		s.nextGlobalRequestID++
 
-		// Keepalive gets a fast-track because we'll get a lot of those
+		// Keepalive gets a fast-track and is not logged because we'll get a lot of those
 		switch request.Type {
 		case "keepalive@openssh.com":
 			s.handleKeepAliveRequest(request, logger)
@@ -795,11 +794,11 @@ func (s *serverImpl) handleChannels(
 		s.lock.Unlock()
 		logger = logger.WithLabel("channelId", channelID)
 		switch newChannel.ChannelType() {
-		case "session":
+		case ChannelTypeSession:
 			go s.handleSessionChannel(authenticatedMetadata.Channel(channelID), newChannel, connection, logger)
-		case "direct-tcpip":
+		case ChannelTypeDirectTCPIP:
 			go s.handleDirectForwardingChannel(authenticatedMetadata.Channel(channelID), newChannel, connection, logger)
-		case "direct-streamlocal@openssh.com":
+		case ChannelTypeDirectStreamLocal:
 			go s.handleDirectStreamLocalChannel(authenticatedMetadata.Channel(channelID), newChannel, connection, logger)
 		default:
 			logger.Debug(
@@ -1267,7 +1266,6 @@ func (s *serverImpl) onForwardTCPIP(authenticatedMetadata metadata.ConnectionAut
 
 func (s *serverImpl) onForwardStreamLocal(authenticatedMetadata metadata.ConnectionAuthenticatedMetadata, requestID uint64, payload interface{}, connection SSHConnectionHandler) error {
 	path := payload.(ssh2.StreamLocalForwardRequestPayload).SocketPath
-	s.logger.Debug("Forwarding streamlocal")
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	conn, ok := s.connMap[authenticatedMetadata.ConnectionID]

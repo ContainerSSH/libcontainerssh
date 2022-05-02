@@ -28,6 +28,10 @@ func (s *sshConnectionHandler) OnUnsupportedGlobalRequest(requestID uint64, requ
 	s.backend.OnUnsupportedGlobalRequest(requestID, requestType, payload)
 }
 
+func (s *sshConnectionHandler) OnFailedDecodeGlobalRequest(requestID uint64, requestType string, payload []byte, reason error) {
+	s.backend.OnFailedDecodeGlobalRequest(requestID, requestType, payload, reason)
+}
+
 func (s *sshConnectionHandler) OnUnsupportedChannel(channelID uint64, channelType string, extraData []byte) {
 	s.backend.OnUnsupportedChannel(channelID, channelType, extraData)
 }

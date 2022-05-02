@@ -310,6 +310,10 @@ func (s *backendHandler) OnX11Request(
 func (b *backendHandler) OnUnsupportedGlobalRequest(_ uint64, _ string, _ []byte) {
 }
 
+func (b *backendHandler) OnFailedDecodeGlobalRequest(_ uint64, _ string, _ []byte, _ error) {
+
+}
+
 func (b *backendHandler) OnUnsupportedChannel(_ uint64, _ string, _ []byte) {
 }
 

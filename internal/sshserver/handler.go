@@ -175,6 +175,8 @@ type SessionChannel interface {
 }
 
 const (
+	ChannelTypeSession              string = "session"
+	ChannelTypeDirectTCPIP          string = "direct-tcpip"
 	ChannelTypeReverseForward       string = "forwarded-tcpip"
 	ChannelTypeX11                  string = "x11"
 	ChannelTypeDirectStreamLocal    string = "direct-streamlocal@openssh.com"
@@ -203,6 +205,11 @@ type SSHConnectionHandler interface {
 	// requestID is an ID uniquely identifying the request within the scope connection. The same ID may appear within
 	//           a channel.
 	OnUnsupportedGlobalRequest(requestID uint64, requestType string, payload []byte)
+
+	// OnFailedDecodeGlobalRequest is called when a global request was received but the payload could not be decoded
+	//
+	// requestID is a ID uniquely identifying the request within the scope of the connection. The same ID may appear within a channel
+	OnFailedDecodeGlobalRequest(requestID uint64, requestType string, payload []byte, reason error)
 
 	// OnUnsupportedChannel is called when a new channel is requested of an unsupported type. This gives the implementer
 	//                      the ability to log unsupported channel requests.

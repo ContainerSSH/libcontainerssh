@@ -219,6 +219,8 @@ func (d *dummyBackendHandler) OnUnsupportedGlobalRequest(_ uint64, _ string, _ [
 
 }
 
+func (b *dummyBackendHandler) OnFailedDecodeGlobalRequest(_ uint64, _ string, _ []byte, _ error) {}
+
 func (d *dummyBackendHandler) OnUnsupportedChannel(_ uint64, _ string, _ []byte) {
 
 }

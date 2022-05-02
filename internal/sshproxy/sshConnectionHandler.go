@@ -195,6 +195,9 @@ func (s *sshConnectionHandler) handleX11Channel(newChannel ssh.NewChannel) {
 func (s *sshConnectionHandler) OnUnsupportedGlobalRequest(_ uint64, _ string, _ []byte) {
 }
 
+func (s *sshConnectionHandler) OnFailedDecodeGlobalRequest(_ uint64, _ string, _ []byte, _ error) {
+}
+
 func (s *sshConnectionHandler) OnUnsupportedChannel(_ uint64, _ string, _ []byte) {
 }
 

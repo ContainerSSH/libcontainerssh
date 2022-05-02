@@ -163,11 +163,8 @@ func (f *AgentForward) setupX11(
 	if err != nil {
 		return err
 	}
-	f.x11Forward = &protocol.ForwardCtx{
-		ToBackend:   toAgent,
-		FromBackend: fromAgent,
-		Logger:      logger,
-	}
+	f.x11Forward = protocol.NewForwardCtx(fromAgent, toAgent, logger)
+
 	// TODO: Fix in protocol
 	screenstr := fmt.Sprintf("%d", screen)
 	connChan, err := f.x11Forward.StartX11ForwardClient(singleConnection, screenstr, proto, cookie)
@@ -226,11 +223,7 @@ func (f *AgentForward) NewTCPReverseForwarding(
 		return err
 	}
 
-	f.reverseForwards[key] = &protocol.ForwardCtx{
-		ToBackend:   toAgent,
-		FromBackend: fromAgent,
-		Logger:      logger,
-	}
+	f.reverseForwards[key] = protocol.NewForwardCtx(fromAgent, toAgent, logger)
 	connChan, err := f.reverseForwards[key].StartReverseForwardClient(bindHost, bindPort, false)
 	if err != nil {
 		return err
@@ -259,11 +252,7 @@ func (f *AgentForward) NewUnixReverseForwarding(
 		return err
 	}
 
-	f.reverseForwards[key] = &protocol.ForwardCtx{
-		ToBackend:   toAgent,
-		FromBackend: fromAgent,
-		Logger:      logger,
-	}
+	f.reverseForwards[key] = protocol.NewForwardCtx(fromAgent, toAgent, logger)
 	connChan, err := f.reverseForwards[key].StartReverseForwardClientUnix(path, false)
 	if err != nil {
 		return err
@@ -338,11 +327,7 @@ func (f *AgentForward) setupDirectForward(
 	if err != nil {
 		return err
 	}
-	f.directForward = &protocol.ForwardCtx{
-		ToBackend:   toAgent,
-		FromBackend: fromAgent,
-		Logger:      logger,
-	}
+	f.directForward = protocol.NewForwardCtx(fromAgent, toAgent, logger)
 	connChan, err := f.directForward.StartServerForward()
 	if err != nil {
 		return err

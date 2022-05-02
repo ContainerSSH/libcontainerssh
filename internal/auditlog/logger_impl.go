@@ -301,6 +301,20 @@ func (l *loggerConnection) OnGlobalRequestUnknown(requestType string) {
 	})
 }
 
+func (l *loggerConnection) OnGlobalRequestDecodeFailed(requestID uint64, requestType string, payload []byte, reason error) {
+	l.log(message.Message{
+		ConnectionID: l.connectionID,
+		Timestamp: time.Now().UnixNano(),
+		MessageType: message.TypeGlobalRequestDecodeFailed,
+		Payload: message.PayloadGlobalRequestDecodeFailed{
+			RequestID: requestID,
+			RequestType: requestType,
+			Payload: payload,
+			Reason: reason.Error(),
+		},
+	})
+}
+
 func (l *loggerConnection) OnNewChannel(channelID message.ChannelID, channelType string) {
 	l.log(message.Message{
 		ConnectionID: l.connectionID,

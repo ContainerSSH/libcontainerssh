@@ -140,19 +140,19 @@ func (s SubsystemConfig) Validate() error {
 
 type ForwardingConfig struct {
 	// ReverseForwardingMode configures how to treat reverse port forwarding requests from the container to the client.
-	ReverseForwardingMode SecurityExecutionPolicy `json:"reverseForwardingMode" yaml:"reverseForwardingMode" default:""`
+	ReverseForwardingMode SecurityExecutionPolicy `json:"reverseForwardingMode" yaml:"reverseForwardingMode" default:"disable"`
 
 	// ForwardingMode configures how to treat port forwarding requests from the client to the container. Enabling this setting also allows using ContainerSSH as a SOCKs proxy.
-	ForwardingMode SecurityExecutionPolicy `json:"forwardingMode" yaml:"forwardingMode" default:""`
+	ForwardingMode SecurityExecutionPolicy `json:"forwardingMode" yaml:"forwardingMode" default:"disable"`
 
 	// SocketForwardingMode configures how to treat connection requests from the client to a unix socket in the container.
-	SocketForwardingMode SecurityExecutionPolicy `json:"socketForwardingMode" yaml:"socketForwardingMode" default:""`
+	SocketForwardingMode SecurityExecutionPolicy `json:"socketForwardingMode" yaml:"socketForwardingMode" default:"disable"`
 
 	// SocketListenMode configures how to treat requests to listen for connections to a unix socket in the container.
-	SocketListenMode SecurityExecutionPolicy `json:"socketListenMode" yaml:"socketListenMode" default:""`
+	SocketListenMode SecurityExecutionPolicy `json:"socketListenMode" yaml:"socketListenMode" default:"disable"`
 
 	// X11forwardingMode configures how to treat X11 forwarding requests from the container to the client
-	X11ForwardingMode SecurityExecutionPolicy `json:"x11ForwardingMode" yaml:"x11ForwardingMode" default:""`
+	X11ForwardingMode SecurityExecutionPolicy `json:"x11ForwardingMode" yaml:"x11ForwardingMode" default:"disable"`
 }
 
 func (f ForwardingConfig) Validate() error {

@@ -22,6 +22,8 @@ type sshConnectionHandler struct {
 
 func (s *sshConnectionHandler) OnUnsupportedGlobalRequest(_ uint64, _ string, _ []byte) {}
 
+func (b *sshConnectionHandler) OnFailedDecodeGlobalRequest(_ uint64, _ string, _ []byte, _ error) {}
+
 func (s *sshConnectionHandler) OnUnsupportedChannel(_ uint64, _ string, _ []byte) {}
 
 func (s *sshConnectionHandler) OnShutdown(context context.Context) {

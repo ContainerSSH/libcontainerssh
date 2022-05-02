@@ -166,9 +166,9 @@ func (c *Connection) setState(state int) {
 }
 
 type ForwardCtx struct {
-	FromBackend       io.Reader
-	ToBackend         io.Writer
-	Logger            log.Logger
+	fromBackend       io.Reader
+	toBackend         io.Writer
+	logger            log.Logger
 	connectionChannel chan *Connection
 	stopped           bool
 
@@ -194,18 +194,18 @@ func (c *ForwardCtx) handleData(packet *Packet) {
 	conn, ok := c.connMap[packet.ConnectionId]
 	c.connMapMu.RUnlock()
 	if !ok {
-		c.Logger.Debug("Key not found")
+		c.logger.Debug("Key not found")
 		return
 	}
 	conn.lock.Lock()
 	defer conn.lock.Unlock()
 	if conn.state != CONNECTION_STATE_STARTED {
-		c.Logger.Debug("conn.state != CONNECTION_STATE_STARTED")
+		c.logger.Debug("conn.state != CONNECTION_STATE_STARTED")
 		return
 	}
 	nByte, err := conn.bufferWriter.Write(packet.Payload)
 	if err != nil {
-		c.Logger.Error(message.Wrap(
+		c.logger.Error(message.Wrap(
 			err,
 			message.MSSHConnected,
 			"Error handling data packet",
@@ -213,7 +213,7 @@ func (c *ForwardCtx) handleData(packet *Packet) {
 		return
 	}
 	if nByte != len(packet.Payload) {
-		c.Logger.Debug("nByte != len(packet.Payload)")
+		c.logger.Debug("nByte != len(packet.Payload)")
 		return
 	}
 }
@@ -222,7 +222,7 @@ func (c *ForwardCtx) handleClose(packet *Packet) {
 	c.connMapMu.Lock()
 	conn, ok := c.connMap[packet.ConnectionId]
 	if !ok {
-		c.Logger.Debug("Key not found")
+		c.logger.Debug("Key not found")
 		return
 	}
 	c.connMapMu.Unlock()
@@ -242,7 +242,7 @@ func (c *ForwardCtx) handleSuccess(packet *Packet) {
 	defer c.connMapMu.Unlock()
 	conn, ok := c.connMap[packet.ConnectionId]
 	if !ok {
-		c.Logger.Debug("Key not found")
+		c.logger.Debug("Key not found")
 		return
 	}
 
@@ -252,7 +252,7 @@ func (c *ForwardCtx) handleSuccess(packet *Packet) {
 	case CONNECTION_STATE_WAITCLOSE:
 		_ = conn.CloseImm()
 	default:
-		c.Logger.Debug("Invalid connection state")
+		c.logger.Debug("Invalid connection state")
 	}
 }
 
@@ -261,10 +261,10 @@ func (c *ForwardCtx) handleError(packet *Packet) {
 	defer c.connMapMu.Unlock()
 	conn, ok := c.connMap[packet.ConnectionId]
 	if !ok {
-		c.Logger.Debug("Key not found")
+		c.logger.Debug("Key not found")
 		return
 	}
-	c.Logger.Debug("Error packet from server")
+	c.logger.Debug("Error packet from server")
 
 	_ = conn.CloseImm()
 }
@@ -272,7 +272,7 @@ func (c *ForwardCtx) handleError(packet *Packet) {
 func (c *ForwardCtx) handleNewConnection(packet *Packet) {
 	newConnectionPacket, err := c.unmarshalNewConnection(packet.Payload)
 	if err != nil {
-		c.Logger.Error("Error unmarshalling new connection payload", err)
+		c.logger.Error("Error unmarshalling new connection payload", err)
 		return
 	}
 	pipeReader, pipeWriter := io.Pipe()
@@ -283,24 +283,24 @@ func (c *ForwardCtx) handleNewConnection(packet *Packet) {
 		bufferReader: pipeReader,
 		bufferWriter: pipeWriter,
 		ctx:          c,
-		logger:       c.Logger,
+		logger:       c.logger,
 	}
 	connection.stateCond = sync.NewCond(&connection.lock)
 	c.connMapMu.Lock()
 	if _, ok := c.connMap[packet.ConnectionId]; ok {
-		c.Logger.Warning("Remote tried to open connection with re-used connectionId")
+		c.logger.Warning("Remote tried to open connection with re-used connectionId")
 		// Cannot send reject here, might interfere with other connection ?
 		c.connMapMu.Unlock()
 		return
 	}
 	if packet.ConnectionId <= c.connectionId {
-		c.Logger.Warning("Suspicious connection, id <= prev")
+		c.logger.Warning("Suspicious connection, id <= prev")
 		// Can't send reject here either
 		c.connMapMu.Unlock()
 		return
 	}
 	if packet.ConnectionId != c.connectionId+1 {
-		c.Logger.Warning("Suspicious connection, id not prev + 1")
+		c.logger.Warning("Suspicious connection, id not prev + 1")
 	}
 
 	c.connectionId = packet.ConnectionId
@@ -309,7 +309,7 @@ func (c *ForwardCtx) handleNewConnection(packet *Packet) {
 	c.connMapMu.Unlock()
 
 	if c.stopped {
-		c.Logger.Warning("Client tried opening a connection after stopping")
+		c.logger.Warning("Client tried opening a connection after stopping")
 		_ = connection.Reject()
 		return
 	}
@@ -322,7 +322,7 @@ func (c *ForwardCtx) handleBackend() {
 		packet := Packet{}
 		err := c.decoder.Decode(&packet)
 		if err != nil {
-			c.Logger.Error(message.Wrap(
+			c.logger.Error(message.Wrap(
 				err,
 				message.MSSHConnected,
 				"Error decoding packet from backend",
@@ -346,7 +346,7 @@ func (c *ForwardCtx) handleBackend() {
 				close(c.connectionChannel)
 			}
 		default:
-			c.Logger.Debug("Received unexpected packet %d", packet.Type)
+			c.logger.Debug("Received unexpected packet %d", packet.Type)
 		}
 	}
 }
@@ -417,7 +417,7 @@ func (c *ForwardCtx) newConnection(
 	}
 	marInfo, err := cbor.Marshal(&connInfo)
 	if err != nil {
-		c.Logger.Error(message.Wrap(
+		c.logger.Error(message.Wrap(
 			err,
 			message.MSSHConnected,
 			"Error marshalling new connection payload",
@@ -432,7 +432,7 @@ func (c *ForwardCtx) newConnection(
 		bufferReader:  bufferReader,
 		bufferWriter:  bufferWriter,
 		ctx:           c,
-		logger:        c.Logger,
+		logger:        c.logger,
 		closeCallback: closeFunc,
 	}
 	conn.stateCond = sync.NewCond(&conn.lock)
@@ -452,7 +452,7 @@ func (c *ForwardCtx) newConnection(
 		Payload:      marInfo,
 	})
 	if err != nil {
-		c.Logger.Error(message.Wrap(
+		c.logger.Error(message.Wrap(
 			err,
 			message.MSSHConnected,
 			"Error writing new connection packet",
@@ -467,8 +467,8 @@ func (c *ForwardCtx) init() {
 	c.connMap = make(map[uint64]*Connection)
 	c.connectionChannel = make(chan *Connection)
 
-	c.encoder = cbor.NewEncoder(c.ToBackend)
-	c.decoder = cbor.NewDecoder(c.FromBackend)
+	c.encoder = cbor.NewEncoder(c.toBackend)
+	c.decoder = cbor.NewDecoder(c.fromBackend)
 }
 
 func (c *ForwardCtx) StartClient() (connectionType uint32, setupPacket SetupPacket, connChan chan *Connection, err error) {
@@ -477,16 +477,16 @@ func (c *ForwardCtx) StartClient() (connectionType uint32, setupPacket SetupPack
 	packet := Packet{}
 	err = c.decoder.Decode(&packet)
 	if err != nil {
-		c.Logger.Warning("Failed to decode packet")
+		c.logger.Warning("Failed to decode packet")
 		return 0, SetupPacket{}, nil, err
 	}
 	if packet.Type != PACKET_SETUP {
-		c.Logger.Debug("Invalid packet type, expecting setup")
+		c.logger.Debug("Invalid packet type, expecting setup")
 		return 0, SetupPacket{}, nil, fmt.Errorf("invalid packet type, expecting PACKET_SETUP")
 	}
 	setup, err := c.unmarshalSetup(packet.Payload)
 	if err != nil {
-		c.Logger.Error(message.Wrap(
+		c.logger.Error(message.Wrap(
 			err,
 			message.MSSHConnected,
 			"Error unmarshalling setup packet",
@@ -499,7 +499,7 @@ func (c *ForwardCtx) StartClient() (connectionType uint32, setupPacket SetupPack
 	}
 	err = c.writePacket(&success)
 	if err != nil {
-		c.Logger.Error(message.Wrap(
+		c.logger.Error(message.Wrap(
 			err,
 			message.MSSHConnected,
 			"Error writing success packet",
@@ -520,7 +520,7 @@ func (c *ForwardCtx) StartServerForward() (chan *Connection, error) {
 	}
 	mar, err := cbor.Marshal(&setupPacket)
 	if err != nil {
-		c.Logger.Error(message.Wrap(
+		c.logger.Error(message.Wrap(
 			err,
 			message.MSSHConnected,
 			"Error marshalling setup packet",
@@ -558,7 +558,7 @@ func (c *ForwardCtx) startReverseForwardingClient(setupPacket SetupPacket) (chan
 
 	mar, err := cbor.Marshal(&setupPacket)
 	if err != nil {
-		c.Logger.Error(message.Wrap(
+		c.logger.Error(message.Wrap(
 			err,
 			message.MSSHConnected,
 			"Error marshalling setup packet",

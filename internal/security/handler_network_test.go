@@ -113,6 +113,10 @@ func (d *dummySSHBackend) OnUnsupportedGlobalRequest(_ uint64, _ string, _ []byt
 	panic("implement me")
 }
 
+func (b *dummySSHBackend) OnFailedDecodeGlobalRequest(_ uint64, _ string, _ []byte, _ error) {
+	panic("implement me")
+}
+
 func (d *dummySSHBackend) OnUnsupportedChannel(_ uint64, _ string, _ []byte) {
 	panic("implement me")
 }

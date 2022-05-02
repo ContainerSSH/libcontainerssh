@@ -93,6 +93,8 @@ func (e *empty) OnHandshakeSuccessful(_ string) {}
 
 func (e *empty) OnGlobalRequestUnknown(_ string) {}
 
+func (e *empty) OnGlobalRequestDecodeFailed(_ uint64, _ string, _ []byte, _ error) {}
+
 func (e *empty) OnNewChannel(_ message.ChannelID, _ string) {}
 
 func (e *empty) OnNewChannelFailed(_ message.ChannelID, _ string, _ string) {}

@@ -138,6 +138,8 @@ type testBackend struct {
 
 func (t *testBackend) OnUnsupportedGlobalRequest(_ uint64, _ string, _ []byte) {}
 
+func (b *testBackend) OnFailedDecodeGlobalRequest(_ uint64, _ string, _ []byte, _ error) {}
+
 func (t *testBackend) OnUnsupportedChannel(_ uint64, _ string, _ []byte) {}
 
 func (t *testBackend) OnSessionChannel(_ metadata.ChannelMetadata, _ []byte, _ sshserver.SessionChannel) (
