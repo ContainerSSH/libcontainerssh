@@ -51,10 +51,8 @@ L:
 			fallthrough
 		case CONNECTION_STATE_CLOSED:
 			_ = c.bufferWriter.Close()
-			c.logger.Debug("Connection closing")
 			return 0, fmt.Errorf("connection closed")
 		default:
-			c.logger.Debug("Unknown connection state")
 			return 0, fmt.Errorf("unknown connection state %d", c.state)
 		}
 	}
@@ -194,13 +192,24 @@ func (c *ForwardCtx) handleData(packet *Packet) {
 	conn, ok := c.connMap[packet.ConnectionId]
 	c.connMapMu.RUnlock()
 	if !ok {
-		c.logger.Debug("Key not found")
+		c.logger.Info(
+			message.NewMessage(
+				message.EAgentUnknownConnection,
+				"Received data packet with unknown connection id %d",
+				packet.ConnectionId,
+			),
+		)
 		return
 	}
 	conn.lock.Lock()
 	defer conn.lock.Unlock()
 	if conn.state != CONNECTION_STATE_STARTED {
-		c.logger.Debug("conn.state != CONNECTION_STATE_STARTED")
+		c.logger.Info(
+			message.NewMessage(
+				message.EAgentConnectionInvalidState,
+				"Received data packet for a connection in a non-started state",
+			),
+		)
 		return
 	}
 	nByte, err := conn.bufferWriter.Write(packet.Payload)
@@ -213,7 +222,12 @@ func (c *ForwardCtx) handleData(packet *Packet) {
 		return
 	}
 	if nByte != len(packet.Payload) {
-		c.logger.Debug("nByte != len(packet.Payload)")
+		c.logger.Warning(
+			message.NewMessage(
+				message.EAgentWriteFailed,
+				"Failed to write connection packet to agent",
+			),
+		)
 		return
 	}
 }
@@ -222,7 +236,13 @@ func (c *ForwardCtx) handleClose(packet *Packet) {
 	c.connMapMu.Lock()
 	conn, ok := c.connMap[packet.ConnectionId]
 	if !ok {
-		c.logger.Debug("Key not found")
+		c.logger.Info(
+			message.NewMessage(
+				message.EAgentUnknownConnection,
+				"Received close packet with unknown connection id %d",
+				packet.ConnectionId,
+			),
+		)
 		return
 	}
 	c.connMapMu.Unlock()
@@ -242,7 +262,13 @@ func (c *ForwardCtx) handleSuccess(packet *Packet) {
 	defer c.connMapMu.Unlock()
 	conn, ok := c.connMap[packet.ConnectionId]
 	if !ok {
-		c.logger.Debug("Key not found")
+		c.logger.Info(
+			message.NewMessage(
+				message.EAgentUnknownConnection,
+				"Received success packet with unknown connection id %d",
+				packet.ConnectionId,
+			),
+		)
 		return
 	}
 
@@ -252,7 +278,12 @@ func (c *ForwardCtx) handleSuccess(packet *Packet) {
 	case CONNECTION_STATE_WAITCLOSE:
 		_ = conn.CloseImm()
 	default:
-		c.logger.Debug("Invalid connection state")
+		c.logger.Warning(
+			message.NewMessage(
+				message.EAgentConnectionInvalidState,
+				"Received success packet for agent connection in non-wait state",
+			),
+		)
 	}
 }
 
@@ -261,10 +292,23 @@ func (c *ForwardCtx) handleError(packet *Packet) {
 	defer c.connMapMu.Unlock()
 	conn, ok := c.connMap[packet.ConnectionId]
 	if !ok {
-		c.logger.Debug("Key not found")
+		c.logger.Info(
+			message.NewMessage(
+				message.EAgentUnknownConnection,
+				"Received error packet with unknown connection id %d",
+				packet.ConnectionId,
+			),
+		)
 		return
 	}
-	c.logger.Debug("Error packet from server")
+
+	c.logger.Info(
+		message.NewMessage(
+			message.MAgentRemoteError,
+			"Received error packet for connection %d from remote",
+			packet.ConnectionId,
+		),
+	)
 
 	_ = conn.CloseImm()
 }
@@ -346,7 +390,13 @@ func (c *ForwardCtx) handleBackend() {
 				close(c.connectionChannel)
 			}
 		default:
-			c.logger.Debug("Received unexpected packet %d", packet.Type)
+			c.logger.Warning(
+				message.NewMessage(
+					message.EAgentUnknownPacket,
+					"Received unknown packet type %d from agent",
+					packet.Type,
+				),
+			)
 		}
 	}
 }
@@ -481,14 +531,20 @@ func (c *ForwardCtx) StartClient() (connectionType uint32, setupPacket SetupPack
 		return 0, SetupPacket{}, nil, err
 	}
 	if packet.Type != PACKET_SETUP {
-		c.logger.Debug("Invalid packet type, expecting setup")
+		c.logger.Warning(
+			message.NewMessage(
+				message.EAgentPacketInvalid,
+				"Received packet type %d when expecting startup packet from agent",
+				packet.Type,
+			),
+		)
 		return 0, SetupPacket{}, nil, fmt.Errorf("invalid packet type, expecting PACKET_SETUP")
 	}
 	setup, err := c.unmarshalSetup(packet.Payload)
 	if err != nil {
 		c.logger.Error(message.Wrap(
 			err,
-			message.MSSHConnected,
+			message.EAgentDecodingFailed,
 			"Error unmarshalling setup packet",
 		))
 		return 0, setup, nil, err
@@ -501,7 +557,7 @@ func (c *ForwardCtx) StartClient() (connectionType uint32, setupPacket SetupPack
 	if err != nil {
 		c.logger.Error(message.Wrap(
 			err,
-			message.MSSHConnected,
+			message.EAgentWriteFailed,
 			"Error writing success packet",
 		))
 		return 0, setup, nil, err
@@ -522,7 +578,7 @@ func (c *ForwardCtx) StartServerForward() (chan *Connection, error) {
 	if err != nil {
 		c.logger.Error(message.Wrap(
 			err,
-			message.MSSHConnected,
+			message.EAgentDecodingFailed,
 			"Error marshalling setup packet",
 		))
 		return nil, err
@@ -560,7 +616,7 @@ func (c *ForwardCtx) startReverseForwardingClient(setupPacket SetupPacket) (chan
 	if err != nil {
 		c.logger.Error(message.Wrap(
 			err,
-			message.MSSHConnected,
+			message.EAgentDecodingFailed,
 			"Error marshalling setup packet",
 		))
 		return nil, err

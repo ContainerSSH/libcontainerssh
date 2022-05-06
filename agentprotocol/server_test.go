@@ -16,7 +16,6 @@ func TestConnectionSetup(t *testing.T) {
 	fromClientReader, fromClientWriter := io.Pipe()
 	toClientReader, toClientWriter := io.Pipe()
 
-
 	clientCtx := proto.NewForwardCtx(toClientReader, fromClientWriter, log)
 
 	serverCtx := proto.NewForwardCtx(fromClientReader, toClientWriter, log)

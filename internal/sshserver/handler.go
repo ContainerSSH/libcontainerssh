@@ -183,12 +183,27 @@ const (
 	ChannelTypeForwardedStreamLocal string = "forwarded-streamlocal@openssh.com"
 )
 
+// ReverseForward contains a set of callbacks for backends to request the opening of a new channel
 type ReverseForward interface {
+	// NewChannelTCP requests the opening of a reverse forwarding TCP channel
+	//
+	// connectedAddres is the address that was connected to
+	// connectedPort is the port that was connected to
+	// originatorAddress is the address of the initiator of the connection
+	// originatorPort is the port of the initiator of the connection
 	NewChannelTCP(connectedAddress string, connectedPort uint32, originatorAddress string, originatorPort uint32) (ForwardChannel, uint64, error)
+	// NewChannelUnix requests the opening of a reverse forwarding unix socket channel
+	//
+	// path is the container-based path to the unix socket that is being forwarded
 	NewChannelUnix(path string) (ForwardChannel, uint64, error)
+	// NewChannelX11 requests the opening of an X11 channel
+	// 
+	// originatorAddress is the address that initiated the X11 request
+	// originatorPort is the port that originated the X11 request
 	NewChannelX11(originatorAddress string, originatorPort uint32) (ForwardChannel, uint64, error)
 }
 
+// ForwardChannel represents a network forwarding channel
 type ForwardChannel interface {
 	Read([]byte) (int, error)
 
@@ -249,21 +264,41 @@ type SSHConnectionHandler interface {
 		originatorPort uint32,
 	) (channel ForwardChannel, failureReason ChannelRejection)
 
-	// OnRequestTCPReverseForward
+	// OnRequestTCPReverseForward is called when a request is received to start listening on a tcp port and forward all connections from it. The implementer must listen on the host and port provided and signal new connections via the reverseHandler calling the appropriate function (NewChannelTCP)
+	//
+	// bindHost is the interface to listen on
+	// bindPort is the port to listen on
+	// reverseHandler is a set of callbacks to signal new connections
 	OnRequestTCPReverseForward(bindHost string, bindPort uint32, reverseHandler ReverseForward) error
 
+	// OnRequestCancelTCPReverseForward is called when a request to cancel an existing tcp port forwarding is received
+	//
+	// bindHost is the interface of the forwarding to be cancelled
+	// bindPort is the port of the forwarding to be cancelled 
 	OnRequestCancelTCPReverseForward(bindHost string, bindPort uint32) error
 
+	// OnDirectStreamLocal is called when a new forwarding channel is opened to connect and forward data to a unix socket within a container
+	//
+	// channelID is the channelID of the channel that was openned
+	// path is the path to the unix socket to be used
 	OnDirectStreamLocal(
 		channelID uint64,
 		path string,
 	) (channel ForwardChannel, failureReason ChannelRejection)
 
+	// OnRequestStreamLocal is called when unix socket forwarding from the container to the client is requested. The implementer must listen on socket path provided and signal new connections via the reverseHandler calling the appropriate function (NewChannelTCP)
+	//
+	// path is the path to the unix socket to be forwarded
+	// reverseHandler is a set of callbacks to signal new connections
 	OnRequestStreamLocal(
 		path string,
 		reverseHandler ReverseForward,
 	) error
 
+	// OnRequestCancelTCPReverseForward is called when a request to cancel an existing tcp port forwarding is received
+	//
+	// bindHost is the interface of the forwarding to be cancelled
+	// bindPort is the port of the forwarding to be cancelled
 	OnRequestCancelStreamLocal(
 		path string,
 	) error
@@ -339,14 +374,15 @@ type SessionChannelHandler interface {
 		modeList []byte,
 	) error
 
-	// OnX11Request is caled when the client requests X11 forwarding. The implementation can return an error to reject the request.
+	// OnX11Request is called when the client requests the forwarding of X11 connections from the container to the client.
+	// This method may be called after a program is started. The implementation can return an error to reject the request.
 	//
-	// requestID is an incrementing number uniquely identifying this request within the channel.
-	// singleConnection is a flag determining whether only one request/window should be allowed to be forwarded
-	// protocol is a string identifying the X11 authentication protocol
-	// cookie is a string containing the X11 authentication cookie
-	// screen is an int identifying the X11 screen number
-	// reverseHandler is an interface that allows the calee to signal the caller when a new connection is made
+	// requestid is an incrementing number uniquely identifying the request within the channel.
+	// singleConnection is a flag determining whether only one or multiple connections should be forwarded
+	// protocol is the authentication protocol for the X11 connections
+	// cookie is the authentication cookie for the X11 connections
+	// screen is the X11 screen number
+	// reverseHandler is a callback interface to signal when new connections are made
 	OnX11Request(
 		requestID uint64,
 		singleConnection bool,

@@ -26,6 +26,7 @@ type SecurityConfig struct {
 	// Subsystem controls whether to allow or block subsystem requests via SSH.
 	Subsystem SubsystemConfig `json:"subsystem" yaml:"subsystem"`
 
+	// Forwarding controls whether to allow or block connection, port or socket forwarding
 	Forwarding ForwardingConfig `json:"forwarding" yaml:"forwarding"`
 
 	// TTY controls how to treat TTY/PTY requests by clients.

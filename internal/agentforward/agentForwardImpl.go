@@ -11,7 +11,7 @@ import (
 	"github.com/containerssh/libcontainerssh/log"
 )
 
-type AgentForward struct {
+type agentForward struct {
 	lock            sync.Mutex
 	reverseForwards map[string]*protocol.ForwardCtx
 	nX11Channels    uint32
@@ -22,26 +22,26 @@ type AgentForward struct {
 
 func NewAgentForward(
 	logger log.Logger,
-) *AgentForward {
-	return &AgentForward{
+) AgentForward {
+	return &agentForward{
 		reverseForwards: make(map[string]*protocol.ForwardCtx),
 		logger:          logger,
 	}
 }
 
-func (f *AgentForward) HasDirectAgent() bool {
+func (f *agentForward) HasDirectAgent() bool {
 	f.lock.Lock()
 	defer f.lock.Unlock()
 	return f.directForward != nil
 }
 
-func (f *AgentForward) HasX11() bool {
+func (f *agentForward) HasX11() bool {
 	f.lock.Lock()
 	defer f.lock.Unlock()
 	return f.x11Forward != nil
 }
 
-func (f *AgentForward) mangleForwardAddr(proto string, addr string, port uint32) string {
+func (f *agentForward) mangleForwardAddr(proto string, addr string, port uint32) string {
 	switch proto {
 	case "tcp":
 		return fmt.Sprintf("tcp-%s:%d", addr, port)
@@ -61,11 +61,10 @@ func serveConnection(log log.Logger, dst io.WriteCloser, src io.ReadCloser) {
 	_ = src.Close()
 }
 
-func (f *AgentForward) serveX11(connChan chan *protocol.Connection, reverseHandler sshserver.ReverseForward) {
+func (f *agentForward) serveX11(connChan chan *protocol.Connection, reverseHandler sshserver.ReverseForward) {
 	for {
 		agentConn, ok := <-connChan
 		if !ok {
-			f.logger.Info("Connection channel closed, ending forward")
 			return
 		}
 
@@ -95,7 +94,7 @@ func (f *AgentForward) serveX11(connChan chan *protocol.Connection, reverseHandl
 	}
 }
 
-func (f *AgentForward) serveReverseForward(connChan chan *protocol.Connection, reverseHandler sshserver.ReverseForward) {
+func (f *agentForward) serveReverseForward(connChan chan *protocol.Connection, reverseHandler sshserver.ReverseForward) {
 	for {
 		agentConn, ok := <-connChan
 		if !ok {
@@ -121,7 +120,7 @@ func (f *AgentForward) serveReverseForward(connChan chan *protocol.Connection, r
 	}
 }
 
-func (f *AgentForward) serveReverseForwardUnix(connChan chan *protocol.Connection, reverseHandler sshserver.ReverseForward) {
+func (f *agentForward) serveReverseForwardUnix(connChan chan *protocol.Connection, reverseHandler sshserver.ReverseForward) {
 	for {
 		agentConn, ok := <-connChan
 		if !ok {
@@ -141,13 +140,12 @@ func (f *AgentForward) serveReverseForwardUnix(connChan chan *protocol.Connectio
 		if err != nil {
 			return
 		}
-		f.logger.Debug("Serving reverse forward tcp")
 		go serveConnection(f.logger, forwardChannel, agentConn)
 		go serveConnection(f.logger, agentConn, forwardChannel)
 	}
 }
 
-func (f *AgentForward) setupX11(
+func (f *agentForward) setupX11(
 	setupAgentCallback func() (io.Reader, io.Writer, error),
 	logger log.Logger,
 	singleConnection bool,
@@ -165,7 +163,6 @@ func (f *AgentForward) setupX11(
 	}
 	f.x11Forward = protocol.NewForwardCtx(fromAgent, toAgent, logger)
 
-	// TODO: Fix in protocol
 	screenstr := fmt.Sprintf("%d", screen)
 	connChan, err := f.x11Forward.StartX11ForwardClient(singleConnection, screenstr, proto, cookie)
 	if err != nil {
@@ -175,7 +172,7 @@ func (f *AgentForward) setupX11(
 	return nil
 }
 
-func (f *AgentForward) NewX11Forwarding(
+func (f *agentForward) NewX11Forwarding(
 	setupAgentCallback func() (io.Reader, io.Writer, error),
 	logger log.Logger,
 	singleConnection bool,
@@ -204,7 +201,7 @@ func (f *AgentForward) NewX11Forwarding(
 	return nil
 }
 
-func (f *AgentForward) NewTCPReverseForwarding(
+func (f *agentForward) NewTCPReverseForwarding(
 	setupAgentCallback func() (io.Reader, io.Writer, error),
 	logger log.Logger,
 	bindHost string,
@@ -234,7 +231,7 @@ func (f *AgentForward) NewTCPReverseForwarding(
 	return nil
 }
 
-func (f *AgentForward) NewUnixReverseForwarding(
+func (f *agentForward) NewUnixReverseForwarding(
 	setupAgentCallback func() (io.Reader, io.Writer, error),
 	logger log.Logger,
 	path string,
@@ -263,7 +260,7 @@ func (f *AgentForward) NewUnixReverseForwarding(
 	return nil
 }
 
-func (f *AgentForward) CancelTCPForwarding(
+func (f *agentForward) CancelTCPForwarding(
 	bindHost string,
 	bindPort uint32,
 ) error {
@@ -283,7 +280,7 @@ func (f *AgentForward) CancelTCPForwarding(
 	return nil
 }
 
-func (f *AgentForward) CancelStreamLocalForwarding(
+func (f *agentForward) CancelStreamLocalForwarding(
 	path string,
 ) error {
 	f.lock.Lock()
@@ -302,7 +299,7 @@ func (f *AgentForward) CancelStreamLocalForwarding(
 	return nil
 }
 
-func (f *AgentForward) CloseX11Forwarding() error {
+func (f *agentForward) CloseX11Forwarding() error {
 	f.lock.Lock()
 	defer f.lock.Unlock()
 	if f.x11Forward == nil {
@@ -316,7 +313,7 @@ func (f *AgentForward) CloseX11Forwarding() error {
 	return nil
 }
 
-func (f *AgentForward) setupDirectForward(
+func (f *agentForward) setupDirectForward(
 	setupAgentCallback func() (io.Reader, io.Writer, error),
 	logger log.Logger,
 ) error {
@@ -344,7 +341,7 @@ func (f *AgentForward) setupDirectForward(
 	return nil
 }
 
-func (f *AgentForward) NewForwardTCP(
+func (f *agentForward) NewForwardTCP(
 	setupAgentCallback func() (io.Reader, io.Writer, error),
 	logger log.Logger,
 	hostToConnect string,
@@ -370,7 +367,7 @@ func (f *AgentForward) NewForwardTCP(
 	return conn, err
 }
 
-func (f *AgentForward) NewForwardUnix(
+func (f *agentForward) NewForwardUnix(
 	setupAgentCallback func() (io.Reader, io.Writer, error),
 	logger log.Logger,
 	path string,
@@ -390,7 +387,7 @@ func (f *AgentForward) NewForwardUnix(
 	return conn, err
 }
 
-func (f *AgentForward) OnShutdown() {
+func (f *agentForward) OnShutdown() {
 	f.lock.Lock()
 	defer f.lock.Unlock()
 	if f.directForward != nil {

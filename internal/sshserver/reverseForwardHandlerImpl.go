@@ -64,7 +64,6 @@ func (r *ReverseForwardHandler) openChannel(
 		r.logger.Warning("Failed to open forwarding channel", err)
 		return nil, 0, err
 	}
-	r.logger.Debug("RFH: Serving connection")
 
 	go serveRequestChannel(reqChan)
 

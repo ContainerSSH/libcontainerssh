@@ -17,7 +17,7 @@ type sshConnectionHandler struct {
 	networkHandler *networkHandler
 	username       string
 	env            map[string]string
-	agentForward   *agentforward.AgentForward
+	agentForward   agentforward.AgentForward
 }
 
 func (s *sshConnectionHandler) OnUnsupportedGlobalRequest(_ uint64, _ string, _ []byte) {}
