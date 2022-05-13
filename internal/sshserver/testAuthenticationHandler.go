@@ -21,9 +21,10 @@ func (t *testAuthenticationHandler) OnShutdown(ctx context.Context) {
 
 func (t *testAuthenticationHandler) OnNetworkConnection(
 	client net.TCPAddr,
+	proxy *net.TCPAddr,
 	connectionID string,
 ) (NetworkConnectionHandler, error) {
-	backend, err := t.backend.OnNetworkConnection(client, connectionID)
+	backend, err := t.backend.OnNetworkConnection(client, proxy, connectionID)
 	if err != nil {
 		return nil, err
 	}

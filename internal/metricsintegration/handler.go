@@ -30,9 +30,10 @@ func (m *metricsHandler) OnShutdown(shutdownContext context.Context) {
 
 func (m *metricsHandler) OnNetworkConnection(
 	client net.TCPAddr,
+	proxy *net.TCPAddr,
 	connectionID string,
 ) (sshserver.NetworkConnectionHandler, error) {
-	networkBackend, err := m.backend.OnNetworkConnection(client, connectionID)
+	networkBackend, err := m.backend.OnNetworkConnection(client, proxy, connectionID)
 	if err != nil {
 		return networkBackend, err
 	}

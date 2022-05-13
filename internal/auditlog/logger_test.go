@@ -203,6 +203,7 @@ func TestConnect(t *testing.T) {
 			Port: 2222,
 			Zone: "",
 		},
+		nil,
 	)
 	if err != nil {
 		assert.Fail(t, "failed to send connect message to logger", err)
@@ -246,6 +247,7 @@ func TestAuth(t *testing.T) {
 			Port: 2222,
 			Zone: "",
 		},
+		nil,
 	)
 	assert.Nil(t, err)
 	connection.OnAuthPassword("foo", []byte("bar"))

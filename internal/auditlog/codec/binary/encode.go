@@ -48,6 +48,7 @@ func (e *encoder) Encode(messages <-chan message.Message, storage storage.Writer
 
 	startTime := int64(0)
 	var ip = ""
+	var proxy *string
 	var country = "XX"
 	var username *string
 	for {
@@ -58,7 +59,7 @@ func (e *encoder) Encode(messages <-chan message.Message, storage storage.Writer
 		if startTime == 0 {
 			startTime = msg.Timestamp
 		}
-		ip, country, username = e.storeMetadata(msg, storage, startTime, ip, country, username)
+		ip, proxy, country, username = e.storeMetadata(msg, storage, startTime, ip, proxy, country, username)
 		if err := encoder.Encode(&msg); err != nil {
 			return fmt.Errorf("failed to encode audit log message (%w)", err)
 		}
@@ -83,28 +84,32 @@ func (e *encoder) storeMetadata(
 	storage storage.Writer,
 	startTime int64,
 	ip string,
+	proxy *string,
 	country string,
 	username *string,
-) (string, string, *string) {
+) (string, *string, string, *string) {
 	switch msg.MessageType {
 	case message.TypeConnect:
-		remoteAddr := msg.Payload.(message.PayloadConnect).RemoteAddr
-		ip = remoteAddr
+		payload := msg.Payload.(message.PayloadConnect)
+		ip = payload.RemoteAddr
+		if payload.ProxyAddr != "" {
+			proxy = &payload.ProxyAddr
+		}
 		country := e.geoIPProvider.Lookup(net.ParseIP(ip))
-		storage.SetMetadata(startTime/1000000000, ip, country, username)
+		storage.SetMetadata(startTime/1000000000, ip, proxy, country, username)
 	case message.TypeAuthPasswordSuccessful:
 		u := msg.Payload.(message.PayloadAuthPassword).Username
 		username = &u
-		storage.SetMetadata(startTime/1000000000, ip, country, username)
+		storage.SetMetadata(startTime/1000000000, ip, proxy, country, username)
 	case message.TypeAuthPubKeySuccessful:
 		payload := msg.Payload.(message.PayloadAuthPubKey)
 		username = &payload.Username
-		storage.SetMetadata(startTime/1000000000, ip, country, username)
+		storage.SetMetadata(startTime/1000000000, ip, proxy, country, username)
 	case message.TypeHandshakeSuccessful:
 		payload := msg.Payload.(message.PayloadHandshakeSuccessful)
 		username = &payload.Username
-		storage.SetMetadata(startTime/1000000000, ip, country, username)
+		storage.SetMetadata(startTime/1000000000, ip, proxy, country, username)
 	}
 
-	return ip, country, username
+	return ip, proxy, country, username
 }

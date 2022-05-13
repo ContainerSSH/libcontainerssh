@@ -10,6 +10,7 @@ import (
 
 	"github.com/containerssh/libcontainerssh/auth"
 	"github.com/containerssh/libcontainerssh/config"
+	"github.com/containerssh/libcontainerssh/internal/proxyproto"
 	ssh2 "github.com/containerssh/libcontainerssh/internal/ssh"
 	"github.com/containerssh/libcontainerssh/log"
 	messageCodes "github.com/containerssh/libcontainerssh/message"
@@ -59,6 +60,7 @@ func (s *serverImpl) RunWithLifecycle(lifecycle service.Lifecycle) error {
 		s.lock.Unlock()
 		return messageCodes.Wrap(err, messageCodes.ESSHStartFailed, "failed to start SSH server on %s", s.cfg.Listen)
 	}
+
 	s.listenSocket = netListener
 	s.lock.Unlock()
 	if err := s.handler.OnReady(); err != nil {
@@ -77,14 +79,19 @@ func (s *serverImpl) RunWithLifecycle(lifecycle service.Lifecycle) error {
 	s.logger.Info(messageCodes.NewMessage(messageCodes.MSSHServiceAvailable, "SSH server running on %s", s.cfg.Listen))
 
 	go s.handleListenSocketOnShutdown(lifecycle)
+
 	for {
 		tcpConn, err := netListener.Accept()
 		if err != nil {
 			// Assume listen socket closed
 			break
 		}
+		tcpConn, proxyAddr, err := proxyproto.WrapProxy(tcpConn, s.cfg.AllowedProxies)
+		if err != nil {
+			break
+		}
 		s.wg.Add(1)
-		go s.handleConnection(tcpConn)
+		go s.handleConnection(tcpConn, proxyAddr)
 	}
 	lifecycle.Stopping()
 	s.shuttingDown = true
@@ -318,7 +325,7 @@ func (s *serverImpl) createConfiguration(
 		PasswordCallback:            passwordCallback,
 		PublicKeyCallback:           pubkeyCallback,
 		KeyboardInteractiveCallback: keyboardInteractiveCallback,
-		GSSAPIWithMICConfig: gssConfig,
+		GSSAPIWithMICConfig:         gssConfig,
 		ServerVersion:               s.cfg.ServerVersion.String(),
 		BannerCallback:              func(conn ssh.ConnMetadata) string { return s.cfg.Banner },
 	}
@@ -347,7 +354,7 @@ func (s *serverImpl) createAuthenticators(
 func (s *serverImpl) createGSSAPIConfig(
 	handlerNetworkConnection *networkConnectionWrapper,
 	logger log.Logger,
-) (*ssh.GSSAPIWithMICConfig){
+) *ssh.GSSAPIWithMICConfig {
 	var gssConfig *ssh.GSSAPIWithMICConfig
 
 	gssServer := handlerNetworkConnection.OnAuthGSSAPI()
@@ -501,13 +508,18 @@ func (s *serverImpl) createPasswordCallback(
 	return passwordCallback
 }
 
-func (s *serverImpl) handleConnection(conn net.Conn) {
+func (s *serverImpl) handleConnection(conn net.Conn, proxy *net.TCPAddr) {
 	addr := conn.RemoteAddr().(*net.TCPAddr)
 	connectionID := GenerateConnectionID()
 	logger := s.logger.
 		WithLabel("remoteAddr", addr.IP.String()).
 		WithLabel("connectionId", connectionID)
-	handlerNetworkConnection, err := s.handler.OnNetworkConnection(*addr, connectionID)
+
+	if proxy != nil {
+		logger = logger.WithLabel("fromProxy", proxy.IP.String())
+	}
+
+	handlerNetworkConnection, err := s.handler.OnNetworkConnection(*addr, proxy, connectionID)
 	if err != nil {
 		logger.Info(err)
 		_ = conn.Close()

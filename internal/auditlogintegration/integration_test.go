@@ -13,9 +13,9 @@ import (
 	"github.com/containerssh/libcontainerssh/auditlog/message"
 	auth2 "github.com/containerssh/libcontainerssh/auth"
 	"github.com/containerssh/libcontainerssh/config"
-	"github.com/containerssh/libcontainerssh/internal/auth"
 	"github.com/containerssh/libcontainerssh/internal/auditlog/codec/binary"
 	"github.com/containerssh/libcontainerssh/internal/auditlog/storage/file"
+	"github.com/containerssh/libcontainerssh/internal/auth"
 	"github.com/containerssh/libcontainerssh/internal/geoip"
 	"github.com/containerssh/libcontainerssh/internal/sshserver"
 	"github.com/containerssh/libcontainerssh/log"
@@ -352,6 +352,7 @@ func (b *backendHandler) OnShutdown(_ context.Context) {
 
 func (b *backendHandler) OnNetworkConnection(
 	_ net.TCPAddr,
+	_ *net.TCPAddr,
 	_ string,
 ) (sshserver.NetworkConnectionHandler, error) {
 	return b, nil

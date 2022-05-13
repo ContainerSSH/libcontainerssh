@@ -344,7 +344,6 @@ func TestKeepAlive(t *testing.T) {
 	srv.Start()
 	defer srv.Stop(1 * time.Minute)
 
-
 	hostkey, err := ssh.ParsePrivateKey([]byte(srv.GetHostKey()))
 	if err != nil {
 		t.Fatal("Failed to parse private key")
@@ -394,10 +393,10 @@ func TestKeepAlive(t *testing.T) {
 
 	elapsed := recv2.Sub(recv1)
 
-	if elapsed > 2 * time.Second {
+	if elapsed > 2*time.Second {
 		t.Fatal("Received keepalive in too big of an interval", elapsed)
 	}
-	if elapsed < time.Second / 2 {
+	if elapsed < time.Second/2 {
 		t.Fatal("Received keepalive in too short of an interval", elapsed)
 	}
 }
@@ -601,7 +600,7 @@ func (r *rejectHandler) OnReady() error {
 func (r *rejectHandler) OnShutdown(_ context.Context) {
 }
 
-func (r *rejectHandler) OnNetworkConnection(_ net.TCPAddr, _ string) (sshserver.NetworkConnectionHandler, error) {
+func (r *rejectHandler) OnNetworkConnection(_ net.TCPAddr, _ *net.TCPAddr, _ string) (sshserver.NetworkConnectionHandler, error) {
 	return nil, fmt.Errorf("not implemented")
 }
 
@@ -651,7 +650,7 @@ func (f *fullHandler) OnShutdown(shutdownContext context.Context) {
 	close(f.shutdownDone)
 }
 
-func (f *fullHandler) OnNetworkConnection(_ net.TCPAddr, _ string) (sshserver.NetworkConnectionHandler, error) {
+func (f *fullHandler) OnNetworkConnection(_ net.TCPAddr, _ *net.TCPAddr, _ string) (sshserver.NetworkConnectionHandler, error) {
 	return &fullNetworkConnectionHandler{
 		handler: f,
 	}, nil

@@ -167,7 +167,7 @@ func (t *testBackend) OnShutdown(_ context.Context) {
 
 }
 
-func (t *testBackend) OnNetworkConnection(_ net.TCPAddr, _ string) (
+func (t *testBackend) OnNetworkConnection(_ net.TCPAddr, _ *net.TCPAddr, _ string) (
 	sshserver.NetworkConnectionHandler,
 	error,
 ) {

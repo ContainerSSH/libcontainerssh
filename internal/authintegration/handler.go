@@ -59,11 +59,11 @@ func (h *handler) OnShutdown(shutdownContext context.Context) {
 	}
 }
 
-func (h *handler) OnNetworkConnection(client net.TCPAddr, connectionID string) (sshserver.NetworkConnectionHandler, error) {
+func (h *handler) OnNetworkConnection(client net.TCPAddr, proxy *net.TCPAddr, connectionID string) (sshserver.NetworkConnectionHandler, error) {
 	var backend sshserver.NetworkConnectionHandler = nil
 	var err error
 	if h.backend != nil {
-		backend, err = h.backend.OnNetworkConnection(client, connectionID)
+		backend, err = h.backend.OnNetworkConnection(client, proxy, connectionID)
 		if err != nil {
 			return nil, err
 		}

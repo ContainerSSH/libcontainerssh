@@ -34,12 +34,12 @@ func (h *handler) OnShutdown(shutdownContext context.Context) {
 	wg.Wait()
 }
 
-func (h *handler) OnNetworkConnection(client net.TCPAddr, connectionID string) (sshserver.NetworkConnectionHandler, error) {
-	backend, err := h.backend.OnNetworkConnection(client, connectionID)
+func (h *handler) OnNetworkConnection(client net.TCPAddr, proxy *net.TCPAddr, connectionID string) (sshserver.NetworkConnectionHandler, error) {
+	backend, err := h.backend.OnNetworkConnection(client, proxy, connectionID)
 	if err != nil {
 		return nil, err
 	}
-	auditConnection, err := h.logger.OnConnect(message.ConnectionID(connectionID), client)
+	auditConnection, err := h.logger.OnConnect(message.ConnectionID(connectionID), client, proxy)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"failed to initialize audit logger for connection from %s (%w)",

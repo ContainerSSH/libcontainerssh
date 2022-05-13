@@ -28,9 +28,9 @@ type Handler interface {
 	// OnNetworkConnection is called when a new network connection is opened. It must either return a
 	// NetworkConnectionHandler object or an error. In case of an error the network connection is closed.
 	//
-	// The ip parameter provides the IP address of the connecting user. The connectionID parameter provides an opaque
-	// binary identifier for the connection that can be used to track the connection across multiple subsystems.
-	OnNetworkConnection(client net.TCPAddr, connectionID string) (NetworkConnectionHandler, error)
+	// The ip parameter provides the IP address of the connecting user. The proxy parameter provides the IP of the load balancer if one is used.
+	//  The connectionID parameter provides an opaque binary identifier for the connection that can be used to track the connection across multiple subsystems.
+	OnNetworkConnection(client net.TCPAddr, proxy *net.TCPAddr, connectionID string) (NetworkConnectionHandler, error)
 }
 
 // AuthResponse is the result of the authentication process.

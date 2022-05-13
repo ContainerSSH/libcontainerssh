@@ -22,6 +22,7 @@ var maxPartSize = uint(5 * 1024 * 1024 * 1024)
 type queueEntryMetadata struct {
 	StartTime     int64  `json:"startTime" yaml:"startTime"`
 	RemoteAddr    string `json:"remoteAddr" yaml:"remoteAddr"`
+	ProxyAddr     string `json:"proxyAddr,omitempty" yaml:"proxyAddr"`
 	Authenticated bool   `json:"authenticated" yaml:"authenticated"`
 	Username      string `json:"username" yaml:"username"`
 	Country       string `json:"country" yaml:"country"`
@@ -215,9 +216,14 @@ func (q *uploadQueue) getMonitoringWriter(
 	return newMonitoringWriter(
 		writeHandle,
 		q.partSize,
-		func(startTime int64, remoteAddr string, country string, username *string) {
+		func(startTime int64, remoteAddr string, proxyIp *string, country string, username *string) {
 			entry.metadata.StartTime = startTime
 			entry.metadata.RemoteAddr = remoteAddr
+			if proxyIp == nil {
+				entry.metadata.ProxyAddr = ""
+			} else {
+				entry.metadata.ProxyAddr = *proxyIp
+			}
 			entry.metadata.Country = country
 			if username == nil {
 				entry.metadata.Authenticated = false

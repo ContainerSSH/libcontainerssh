@@ -28,6 +28,6 @@ func (a *AbstractHandler) OnShutdown(_ context.Context) {
 //
 // The ip parameter provides the IP address of the connecting user. The connectionID parameter provides an opaque
 // binary identifier for the connection that can be used to track the connection across multiple subsystems.
-func (a *AbstractHandler) OnNetworkConnection(_ net.TCPAddr, _ string) (NetworkConnectionHandler, error) {
+func (a *AbstractHandler) OnNetworkConnection(_ net.TCPAddr, _ *net.TCPAddr, _ string) (NetworkConnectionHandler, error) {
 	return nil, fmt.Errorf("not implemented")
 }

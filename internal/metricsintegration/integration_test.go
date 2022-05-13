@@ -51,6 +51,7 @@ func testAuthSuccessful(
 			IP:   net.ParseIP("127.0.0.1"),
 			Port: 2222,
 		},
+		nil,
 		sshserver.GenerateConnectionID(),
 	)
 	if !assert.NoError(t, err) {
@@ -95,6 +96,7 @@ func testAuthFailed(
 			IP:   net.ParseIP("127.0.0.1"),
 			Port: 2222,
 		},
+		nil,
 		sshserver.GenerateConnectionID(),
 	)
 	assert.NoError(t, err)
@@ -129,6 +131,7 @@ func (d *dummyBackendHandler) OnShutdown(_ context.Context) {
 
 func (d *dummyBackendHandler) OnNetworkConnection(
 	_ net.TCPAddr,
+	_ *net.TCPAddr,
 	_ string,
 ) (sshserver.NetworkConnectionHandler, error) {
 	return d, nil

@@ -19,6 +19,7 @@ type writer struct {
 	data      bytes.Buffer
 	startTime int64
 	sourceIP  string
+	proxyIP   *string
 	username  *string
 	wait      chan bool
 	country   string
@@ -43,9 +44,10 @@ func (w *writer) waitForClose() {
 	<-w.wait
 }
 
-func (w *writer) SetMetadata(startTime int64, sourceIP string, country string, username *string) {
+func (w *writer) SetMetadata(startTime int64, sourceIP string, proxyIP *string, country string, username *string) {
 	w.startTime = startTime
 	w.sourceIP = sourceIP
+	w.proxyIP = proxyIP
 	w.username = username
 	w.country = country
 }

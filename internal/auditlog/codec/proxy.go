@@ -23,6 +23,6 @@ func (s *storageWriterProxy) Close() error {
 	return s.backend.Close()
 }
 
-func (s *storageWriterProxy) SetMetadata(_ int64, _ string, _ string, _ *string) {
+func (s *storageWriterProxy) SetMetadata(_ int64, _ string, _ *string, _ string, _ *string) {
 	// No metadata storage
 }

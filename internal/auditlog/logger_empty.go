@@ -95,7 +95,7 @@ func (e *empty) OnNewChannelSuccess(_ message.ChannelID, _ string) Channel {
 	return e
 }
 
-func (e *empty) OnConnect(_ message.ConnectionID, _ net.TCPAddr) (Connection, error) {
+func (e *empty) OnConnect(_ message.ConnectionID, _ net.TCPAddr, _ *net.TCPAddr) (Connection, error) {
 	return e, nil
 }
 
