@@ -14,8 +14,8 @@ import (
 	"github.com/containerssh/libcontainerssh/log"
 	messageCodes "github.com/containerssh/libcontainerssh/message"
 	"github.com/containerssh/libcontainerssh/service"
-	"golang.org/x/crypto/ssh"
 	"github.com/pires/go-proxyproto"
+	"golang.org/x/crypto/ssh"
 )
 
 type serverImpl struct {
@@ -66,7 +66,7 @@ func (s *serverImpl) RunWithLifecycle(lifecycle service.Lifecycle) error {
 		policy := proxyproto.MustStrictWhiteListPolicy(s.cfg.AllowedProxies)
 		netListener = &proxyproto.Listener{
 			Listener: netListener,
-			Policy: policy,
+			Policy:   policy,
 		}
 	}
 	s.listenSocket = netListener
@@ -94,13 +94,12 @@ func (s *serverImpl) RunWithLifecycle(lifecycle service.Lifecycle) error {
 			break
 		}
 		s.wg.Add(1)
-		logger := s.logger
+		var proxy *net.TCPAddr
 		if useProxy {
 			proxyConn := tcpConn.(*proxyproto.Conn)
-			proxyIp := proxyConn.Raw().RemoteAddr()
-			logger = logger.WithLabel("fromProxy", proxyIp.(*net.TCPAddr).IP.String())
+			proxy = proxyConn.Raw().RemoteAddr().(*net.TCPAddr)
 		}
-		go s.handleConnection(logger, tcpConn)
+		go s.handleConnection(tcpConn, proxy)
 	}
 	lifecycle.Stopping()
 	s.shuttingDown = true
@@ -334,7 +333,7 @@ func (s *serverImpl) createConfiguration(
 		PasswordCallback:            passwordCallback,
 		PublicKeyCallback:           pubkeyCallback,
 		KeyboardInteractiveCallback: keyboardInteractiveCallback,
-		GSSAPIWithMICConfig: gssConfig,
+		GSSAPIWithMICConfig:         gssConfig,
 		ServerVersion:               s.cfg.ServerVersion.String(),
 		BannerCallback:              func(conn ssh.ConnMetadata) string { return s.cfg.Banner },
 	}
@@ -363,7 +362,7 @@ func (s *serverImpl) createAuthenticators(
 func (s *serverImpl) createGSSAPIConfig(
 	handlerNetworkConnection *networkConnectionWrapper,
 	logger log.Logger,
-) (*ssh.GSSAPIWithMICConfig){
+) *ssh.GSSAPIWithMICConfig {
 	var gssConfig *ssh.GSSAPIWithMICConfig
 
 	gssServer := handlerNetworkConnection.OnAuthGSSAPI()
@@ -517,13 +516,18 @@ func (s *serverImpl) createPasswordCallback(
 	return passwordCallback
 }
 
-func (s *serverImpl) handleConnection(logger log.Logger, conn net.Conn) {
+func (s *serverImpl) handleConnection(conn net.Conn, proxy *net.TCPAddr) {
 	addr := conn.RemoteAddr().(*net.TCPAddr)
 	connectionID := GenerateConnectionID()
-	logger = logger.
+	logger := s.logger.
 		WithLabel("remoteAddr", addr.IP.String()).
 		WithLabel("connectionId", connectionID)
-	handlerNetworkConnection, err := s.handler.OnNetworkConnection(*addr, connectionID)
+
+	if proxy != nil {
+		logger = logger.WithLabel("fromProxy", proxy.IP.String())
+	}
+
+	handlerNetworkConnection, err := s.handler.OnNetworkConnection(*addr, proxy, connectionID)
 	if err != nil {
 		logger.Info(err)
 		_ = conn.Close()

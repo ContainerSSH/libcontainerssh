@@ -36,12 +36,19 @@ type handler struct {
 
 func (h *handler) OnNetworkConnection(
 	remoteAddr net.TCPAddr,
+	proxy *net.TCPAddr,
 	connectionID string,
 ) (sshserver.NetworkConnectionHandler, error) {
+	logger := h.logger.
+		WithLabel("connectionId", connectionID).
+		WithLabel("remoteAddr", remoteAddr.IP.String())
+
+	if proxy != nil {
+		logger = logger.WithLabel("fromProxy", proxy.IP.String())
+	}
+
 	return &networkHandler{
-		logger: h.logger.
-			WithLabel("connectionId", connectionID).
-			WithLabel("remoteAddr", remoteAddr.IP.String()),
+		logger:       logger,
 		rootHandler:  h,
 		remoteAddr:   remoteAddr,
 		connectionID: connectionID,

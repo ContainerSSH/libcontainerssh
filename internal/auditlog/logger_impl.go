@@ -55,7 +55,7 @@ func (l *loggerImplementation) Shutdown(shutdownContext context.Context) {
 
 //region Connection
 
-func (l *loggerImplementation) OnConnect(connectionID message.ConnectionID, ip net.TCPAddr) (Connection, error) {
+func (l *loggerImplementation) OnConnect(connectionID message.ConnectionID, ip net.TCPAddr, proxy *net.TCPAddr) (Connection, error) {
 	name := string(connectionID)
 	writer, err := l.storage.OpenWriter(name)
 	if err != nil {
@@ -76,12 +76,17 @@ func (l *loggerImplementation) OnConnect(connectionID message.ConnectionID, ip n
 			l.logger.Emergency(err)
 		}
 	}()
+	proxyAddr := ""
+	if proxy != nil {
+		proxyAddr = proxy.IP.String()
+	}
 	conn.log(message.Message{
 		ConnectionID: connectionID,
 		Timestamp:    time.Now().UnixNano(),
 		MessageType:  message.TypeConnect,
 		Payload: message.PayloadConnect{
 			RemoteAddr: ip.IP.String(),
+			ProxyAddr:  proxyAddr,
 			Country:    l.geoIPLookup.Lookup(ip.IP),
 		},
 		ChannelID: nil,

@@ -9,7 +9,7 @@ import (
 func newMonitoringWriter(
 	backingWriter io.WriteCloser,
 	partSize uint,
-	onMetadata func(startTime int64, remoteAddr string, country string, username *string),
+	onMetadata func(startTime int64, remoteAddr string, proxyIp *string, country string, username *string),
 	onPart func(),
 	onClose func(),
 ) storage.Writer {
@@ -30,14 +30,14 @@ type monitoringWriter struct {
 	backingWriter io.WriteCloser
 	bytesWritten  uint64
 	partSize      uint
-	onMetadata    func(startTime int64, remoteAddr string, country string, username *string)
+	onMetadata    func(startTime int64, remoteAddr string, proxyIp *string, country string, username *string)
 	onPart        func()
 	onClose       func()
 	lastPart      int
 }
 
-func (m *monitoringWriter) SetMetadata(startTime int64, sourceIP string, country string, username *string) {
-	m.onMetadata(startTime, sourceIP, country, username)
+func (m *monitoringWriter) SetMetadata(startTime int64, sourceIP string, proxyIP *string, country string, username *string) {
+	m.onMetadata(startTime, sourceIP, proxyIP, country, username)
 }
 
 func (m *monitoringWriter) Write(p []byte) (n int, err error) {

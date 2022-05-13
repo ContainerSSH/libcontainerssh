@@ -41,8 +41,9 @@ type Writer interface {
 	//
 	// startTime is the time when the connection started in unix timestamp.
 	// sourceIp  is the IP address the user connected from.
+	// proxyIp   is the IP address the user connected with (or nil)
 	// country   is the ISO country code or "XX" if the lookup failed.
 	// username  is the username the user entered. The first time this method is called the username will be nil,
 	//           may be called subsequently is the user authenticated.
-	SetMetadata(startTime int64, sourceIP string, country string, username *string)
+	SetMetadata(startTime int64, sourceIP string, proxyIp *string, country string, username *string)
 }

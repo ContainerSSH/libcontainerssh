@@ -62,6 +62,7 @@ func (e *encoder) Encode(messages <-chan message.Message, storage storage.Writer
 	startTime := int64(0)
 	headerWritten := false
 	var ip = ""
+	var proxy *string
 	var username *string
 	const shell = "/bin/sh"
 	for {
@@ -70,11 +71,12 @@ func (e *encoder) Encode(messages <-chan message.Message, storage storage.Writer
 			break
 		}
 		var err error
-		startTime, headerWritten, ip, username, err = e.encodeMessage(
+		startTime, headerWritten, ip, proxy, username, err = e.encodeMessage(
 			startTime,
 			msg,
 			&asciicastHeader,
 			ip,
+			proxy,
 			storage,
 			username,
 			headerWritten,
@@ -106,11 +108,12 @@ func (e *encoder) encodeMessage(
 	msg message.Message,
 	asciicastHeader *Header,
 	ip string,
+	proxy *string,
 	storage storage.Writer,
 	username *string,
 	headerWritten bool,
 	shell string,
-) (int64, bool, string, *string, error) {
+) (int64, bool, string, *string, *string, error) {
 	if msg.MessageType == message.TypeConnect {
 		startTime = msg.Timestamp
 		asciicastHeader.Timestamp = int(startTime / 1000000000)
@@ -121,11 +124,11 @@ func (e *encoder) encodeMessage(
 	case message.TypeConnect:
 		ip, username = e.handleConnect(storage, msg, startTime, country, username)
 	case message.TypeAuthPasswordSuccessful:
-		ip, username = e.handleAuthPasswordSuccessful(storage, msg, startTime, ip, country)
+		ip, username = e.handleAuthPasswordSuccessful(storage, msg, startTime, ip, proxy, country)
 	case message.TypeAuthPubKeySuccessful:
-		ip, username = e.handleAuthPubkeySuccessful(storage, msg, startTime, ip, country)
+		ip, username = e.handleAuthPubkeySuccessful(storage, msg, startTime, ip, proxy, country)
 	case message.TypeHandshakeSuccessful:
-		ip, username = e.handleHandshakeSuccessful(storage, msg, startTime, ip, country)
+		ip, username = e.handleHandshakeSuccessful(storage, msg, startTime, ip, proxy, country)
 	case message.TypeChannelRequestSetEnv:
 		payload := msg.Payload.(message.PayloadChannelRequestSetEnv)
 		asciicastHeader.Env[payload.Name] = payload.Value
@@ -142,36 +145,40 @@ func (e *encoder) encodeMessage(
 		startTime, headerWritten, err = e.handleIO(startTime, msg, asciicastHeader, headerWritten, shell, storage)
 	}
 	if err != nil {
-		return startTime, headerWritten, ip, username, err
+		return startTime, headerWritten, ip, proxy, username, err
 	}
-	return startTime, headerWritten, ip, username, nil
+	return startTime, headerWritten, ip, proxy, username, nil
 }
 
 func (e *encoder) handleConnect(storage storage.Writer, msg message.Message, startTime int64, country string, username *string) (string, *string) {
 	payload := msg.Payload.(message.PayloadConnect)
 	ip := payload.RemoteAddr
-	storage.SetMetadata(startTime/1000000000, ip, country, username)
+	var proxy *string
+	if payload.ProxyAddr != "" {
+		proxy = &payload.ProxyAddr
+	}
+	storage.SetMetadata(startTime/1000000000, ip, proxy, country, username)
 	return ip, username
 }
 
-func (e *encoder) handleAuthPasswordSuccessful(storage storage.Writer, msg message.Message, startTime int64, ip string, country string) (string, *string) {
+func (e *encoder) handleAuthPasswordSuccessful(storage storage.Writer, msg message.Message, startTime int64, ip string, proxy *string, country string) (string, *string) {
 	payload := msg.Payload.(message.PayloadAuthPassword)
 	username := &payload.Username
-	storage.SetMetadata(startTime/1000000000, ip, country, username)
+	storage.SetMetadata(startTime/1000000000, ip, proxy, country, username)
 	return ip, username
 }
 
-func (e *encoder) handleAuthPubkeySuccessful(storage storage.Writer, msg message.Message, startTime int64, ip string, country string) (string, *string) {
+func (e *encoder) handleAuthPubkeySuccessful(storage storage.Writer, msg message.Message, startTime int64, ip string, proxy *string, country string) (string, *string) {
 	payload := msg.Payload.(message.PayloadAuthPubKey)
 	username := &payload.Username
-	storage.SetMetadata(startTime/1000000000, ip, country, username)
+	storage.SetMetadata(startTime/1000000000, ip, proxy, country, username)
 	return ip, username
 }
 
-func (e *encoder) handleHandshakeSuccessful(storage storage.Writer, msg message.Message, startTime int64, ip string, country string) (string, *string) {
+func (e *encoder) handleHandshakeSuccessful(storage storage.Writer, msg message.Message, startTime int64, ip string, proxy *string, country string) (string, *string) {
 	payload := msg.Payload.(message.PayloadHandshakeSuccessful)
 	username := &payload.Username
-	storage.SetMetadata(startTime/1000000000, ip, country, username)
+	storage.SetMetadata(startTime/1000000000, ip, proxy, country, username)
 	return ip, username
 }
 

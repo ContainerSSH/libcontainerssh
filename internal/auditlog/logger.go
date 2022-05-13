@@ -12,7 +12,7 @@ import (
 type Logger interface {
 	// OnConnect creates an audit log message for a new connection and simultaneously returns a connection object for
 	//           connection-specific messages
-	OnConnect(connectionID message.ConnectionID, ip net.TCPAddr) (Connection, error)
+	OnConnect(connectionID message.ConnectionID, ip net.TCPAddr, proxy *net.TCPAddr) (Connection, error)
 	// Shutdown triggers all failing uploads to cancel, waits for all currently running uploads to finish, then returns.
 	// When the shutdownContext expires it will do its best to immediately upload any running background processes.
 	Shutdown(shutdownContext context.Context)
