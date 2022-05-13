@@ -10,11 +10,11 @@ import (
 
 	"github.com/containerssh/libcontainerssh/auth"
 	"github.com/containerssh/libcontainerssh/config"
+	"github.com/containerssh/libcontainerssh/internal/proxyproto"
 	ssh2 "github.com/containerssh/libcontainerssh/internal/ssh"
 	"github.com/containerssh/libcontainerssh/log"
 	messageCodes "github.com/containerssh/libcontainerssh/message"
 	"github.com/containerssh/libcontainerssh/service"
-	"github.com/pires/go-proxyproto"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -55,20 +55,12 @@ func (s *serverImpl) RunWithLifecycle(lifecycle service.Lifecycle) error {
 		Control: s.socketControl,
 	}
 
-	useProxy := len(s.cfg.AllowedProxies) > 0
-
 	netListener, err := listenConfig.Listen(lifecycle.Context(), "tcp", s.cfg.Listen)
 	if err != nil {
 		s.lock.Unlock()
 		return messageCodes.Wrap(err, messageCodes.ESSHStartFailed, "failed to start SSH server on %s", s.cfg.Listen)
 	}
-	if useProxy {
-		policy := proxyproto.MustStrictWhiteListPolicy(s.cfg.AllowedProxies)
-		netListener = &proxyproto.Listener{
-			Listener: netListener,
-			Policy:   policy,
-		}
-	}
+
 	s.listenSocket = netListener
 	s.lock.Unlock()
 	if err := s.handler.OnReady(); err != nil {
@@ -87,19 +79,19 @@ func (s *serverImpl) RunWithLifecycle(lifecycle service.Lifecycle) error {
 	s.logger.Info(messageCodes.NewMessage(messageCodes.MSSHServiceAvailable, "SSH server running on %s", s.cfg.Listen))
 
 	go s.handleListenSocketOnShutdown(lifecycle)
+
 	for {
 		tcpConn, err := netListener.Accept()
 		if err != nil {
 			// Assume listen socket closed
 			break
 		}
-		s.wg.Add(1)
-		var proxy *net.TCPAddr
-		if useProxy {
-			proxyConn := tcpConn.(*proxyproto.Conn)
-			proxy = proxyConn.Raw().RemoteAddr().(*net.TCPAddr)
+		tcpConn, proxyAddr, err := proxyproto.WrapProxy(tcpConn, s.cfg.AllowedProxies)
+		if err != nil {
+			break
 		}
-		go s.handleConnection(tcpConn, proxy)
+		s.wg.Add(1)
+		go s.handleConnection(tcpConn, proxyAddr)
 	}
 	lifecycle.Stopping()
 	s.shuttingDown = true
