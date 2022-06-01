@@ -653,6 +653,7 @@ func (s *serverImpl) handleKeepAliveRequest(req *ssh.Request, logger log.Logger)
 	}
 }
 
+//nolint:dupl
 func (s *serverImpl) handleGlobalRequest(authenticatedMetadata metadata.ConnectionAuthenticatedMetadata, requestID uint64, connection SSHConnectionHandler, req *ssh.Request, logger log.Logger) {
 	reply := s.createReply(req, logger)
 	payload, err := s.unmarshalGlobalRequestPayload(req)
@@ -1081,6 +1082,7 @@ func (s *serverImpl) unmarshalGlobalRequestPayload(request *ssh.Request) (payloa
 	}
 }
 
+//nolint:dupl
 func (s *serverImpl) handleChannelRequest(
 	channelMetadata metadata.ChannelMetadata,
 	requestID uint64,
