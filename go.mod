@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/aws/aws-sdk-go v1.43.17
 	github.com/containerssh/gokrb5/v8 v8.4.3-0.20211214150832-4bf8b91123af
-	github.com/creasty/defaults v1.5.2
+	github.com/creasty/defaults v1.6.0
 	github.com/docker/distribution v2.8.1+incompatible
 	github.com/docker/docker v20.10.13+incompatible
 	github.com/docker/go-connections v0.4.0
