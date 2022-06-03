@@ -20,7 +20,7 @@ require (
 	github.com/opencontainers/image-spec v1.0.2
 	github.com/oschwald/geoip2-golang v1.5.0
 	github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.1
 	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce
 	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9
 	gopkg.in/jcmturner/goidentity.v3 v3.0.0
