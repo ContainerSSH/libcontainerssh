@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"net"
 
-    "go.containerssh.io/libcontainerssh/auditlog/message"
-    "go.containerssh.io/libcontainerssh/internal/auditlog/codec"
-    "go.containerssh.io/libcontainerssh/internal/auditlog/storage"
-    "go.containerssh.io/libcontainerssh/internal/geoip/geoipprovider"
 	"github.com/fxamacker/cbor"
+	"go.containerssh.io/libcontainerssh/auditlog/message"
+	"go.containerssh.io/libcontainerssh/internal/auditlog/codec"
+	"go.containerssh.io/libcontainerssh/internal/auditlog/storage"
+	"go.containerssh.io/libcontainerssh/internal/geoip/geoipprovider"
 )
 
 // NewEncoder creates an encoder that encodes messages in CBOR+GZIP format as documented

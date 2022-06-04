@@ -5,11 +5,11 @@ import (
 	"sync"
 	"testing"
 
-    "go.containerssh.io/libcontainerssh/auditlog/message"
-    "go.containerssh.io/libcontainerssh/internal/auditlog/codec"
-    "go.containerssh.io/libcontainerssh/internal/auditlog/codec/binary"
-    "go.containerssh.io/libcontainerssh/internal/geoip/dummy"
 	"github.com/stretchr/testify/assert"
+	"go.containerssh.io/libcontainerssh/auditlog/message"
+	"go.containerssh.io/libcontainerssh/internal/auditlog/codec"
+	"go.containerssh.io/libcontainerssh/internal/auditlog/codec/binary"
+	"go.containerssh.io/libcontainerssh/internal/geoip/dummy"
 )
 
 func createPipeline() (codec.Encoder, codec.Decoder) {

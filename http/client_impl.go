@@ -10,10 +10,10 @@ import (
 	"net/http"
 	"net/url"
 
-    "go.containerssh.io/libcontainerssh/config"
-    "go.containerssh.io/libcontainerssh/log"
-    "go.containerssh.io/libcontainerssh/message"
 	"github.com/gorilla/schema"
+	"go.containerssh.io/libcontainerssh/config"
+	"go.containerssh.io/libcontainerssh/log"
+	"go.containerssh.io/libcontainerssh/message"
 )
 
 type client struct {

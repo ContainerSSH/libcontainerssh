@@ -50,17 +50,20 @@ func (p *authzHandler) OnRequest(request http.ServerRequest, response http.Serve
 		response.SetStatus(500)
 		response.SetBody(
 			auth.ResponseBody{
-				ConnectionAuthenticatedMetadata: requestObject.ConnectionAuthenticatedMetadata,
-				Success:                         false,
+				DynamicMetadata:       meta.DynamicMetadata,
+				AuthenticatedUsername: meta.AuthenticatedUsername,
+				Success:               false,
 			},
 		)
 		return nil
 	} else {
 		response.SetBody(
 			auth.ResponseBody{
-				ConnectionAuthenticatedMetadata: meta,
-				Success:                         success,
-			})
+				DynamicMetadata:       meta.DynamicMetadata,
+				AuthenticatedUsername: meta.AuthenticatedUsername,
+				Success:               success,
+			},
+		)
 	}
 	return nil
 }
@@ -85,16 +88,20 @@ func (p *passwordHandler) OnRequest(request http.ServerRequest, response http.Se
 		response.SetStatus(500)
 		response.SetBody(
 			auth.ResponseBody{
-				ConnectionAuthenticatedMetadata: meta,
-				Success:                         false,
-			})
+				DynamicMetadata:       meta.DynamicMetadata,
+				AuthenticatedUsername: meta.AuthenticatedUsername,
+				Success:               false,
+			},
+		)
 		return nil
 	} else {
 		response.SetBody(
 			auth.ResponseBody{
-				ConnectionAuthenticatedMetadata: meta,
-				Success:                         success,
-			})
+				DynamicMetadata:       meta.DynamicMetadata,
+				AuthenticatedUsername: meta.AuthenticatedUsername,
+				Success:               success,
+			},
+		)
 	}
 	return nil
 }
@@ -118,17 +125,20 @@ func (p *pubKeyHandler) OnRequest(request http.ServerRequest, response http.Serv
 		response.SetStatus(500)
 		response.SetBody(
 			auth.ResponseBody{
-				ConnectionAuthenticatedMetadata: meta,
-				Success:                         false,
+				DynamicMetadata:       meta.DynamicMetadata,
+				AuthenticatedUsername: meta.AuthenticatedUsername,
+				Success:               false,
 			},
 		)
 		return nil
 	} else {
 		response.SetBody(
 			auth.ResponseBody{
-				ConnectionAuthenticatedMetadata: meta,
-				Success:                         success,
-			})
+				DynamicMetadata:       meta.DynamicMetadata,
+				AuthenticatedUsername: meta.AuthenticatedUsername,
+				Success:               success,
+			},
+		)
 	}
 	return nil
 }

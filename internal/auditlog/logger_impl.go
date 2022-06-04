@@ -7,12 +7,12 @@ import (
 	"sync"
 	"time"
 
-    "go.containerssh.io/libcontainerssh/auditlog/message"
-    "go.containerssh.io/libcontainerssh/config"
-    "go.containerssh.io/libcontainerssh/internal/auditlog/codec"
-    "go.containerssh.io/libcontainerssh/internal/auditlog/storage"
-    "go.containerssh.io/libcontainerssh/internal/geoip/geoipprovider"
-    "go.containerssh.io/libcontainerssh/log"
+	"go.containerssh.io/libcontainerssh/auditlog/message"
+	"go.containerssh.io/libcontainerssh/config"
+	"go.containerssh.io/libcontainerssh/internal/auditlog/codec"
+	"go.containerssh.io/libcontainerssh/internal/auditlog/storage"
+	"go.containerssh.io/libcontainerssh/internal/geoip/geoipprovider"
+	"go.containerssh.io/libcontainerssh/log"
 )
 
 type loggerImplementation struct {
@@ -304,13 +304,13 @@ func (l *loggerConnection) OnGlobalRequestUnknown(requestType string) {
 func (l *loggerConnection) OnGlobalRequestDecodeFailed(requestID uint64, requestType string, payload []byte, reason error) {
 	l.log(message.Message{
 		ConnectionID: l.connectionID,
-		Timestamp: time.Now().UnixNano(),
-		MessageType: message.TypeGlobalRequestDecodeFailed,
+		Timestamp:    time.Now().UnixNano(),
+		MessageType:  message.TypeGlobalRequestDecodeFailed,
 		Payload: message.PayloadGlobalRequestDecodeFailed{
-			RequestID: requestID,
+			RequestID:   requestID,
 			RequestType: requestType,
-			Payload: payload,
-			Reason: reason.Error(),
+			Payload:     payload,
+			Reason:      reason.Error(),
 		},
 	})
 }

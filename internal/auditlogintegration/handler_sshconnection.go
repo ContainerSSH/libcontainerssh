@@ -4,10 +4,10 @@ import (
 	"context"
 	"io"
 
-    "go.containerssh.io/libcontainerssh/auditlog/message"
-    "go.containerssh.io/libcontainerssh/internal/auditlog"
-    "go.containerssh.io/libcontainerssh/internal/sshserver"
-    "go.containerssh.io/libcontainerssh/metadata"
+	"go.containerssh.io/libcontainerssh/auditlog/message"
+	"go.containerssh.io/libcontainerssh/internal/auditlog"
+	"go.containerssh.io/libcontainerssh/internal/sshserver"
+	"go.containerssh.io/libcontainerssh/metadata"
 )
 
 type sshConnectionHandler struct {

@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"io"
 
-    "go.containerssh.io/libcontainerssh/config"
-    "go.containerssh.io/libcontainerssh/internal/agentforward"
-    "go.containerssh.io/libcontainerssh/internal/sshserver"
-    "go.containerssh.io/libcontainerssh/message"
-    "go.containerssh.io/libcontainerssh/metadata"
+	"go.containerssh.io/libcontainerssh/config"
+	"go.containerssh.io/libcontainerssh/internal/agentforward"
+	"go.containerssh.io/libcontainerssh/internal/sshserver"
+	"go.containerssh.io/libcontainerssh/message"
+	"go.containerssh.io/libcontainerssh/metadata"
 	"golang.org/x/crypto/ssh"
 )
 

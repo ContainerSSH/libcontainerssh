@@ -6,10 +6,10 @@ import (
 	"path"
 	"testing"
 
-    "go.containerssh.io/libcontainerssh/config"
 	"github.com/stretchr/testify/assert"
+	"go.containerssh.io/libcontainerssh/config"
 
-    "go.containerssh.io/libcontainerssh/internal/geoip"
+	"go.containerssh.io/libcontainerssh/internal/geoip"
 )
 
 func TestMaxMind(t *testing.T) {

@@ -6,16 +6,16 @@ import (
 	"net"
 	"testing"
 
-    publicAuth "go.containerssh.io/libcontainerssh/auth"
-    "go.containerssh.io/libcontainerssh/config"
-    "go.containerssh.io/libcontainerssh/internal/auth"
-    "go.containerssh.io/libcontainerssh/internal/geoip/dummy"
-    "go.containerssh.io/libcontainerssh/internal/metrics"
-    "go.containerssh.io/libcontainerssh/internal/metricsintegration"
-    "go.containerssh.io/libcontainerssh/internal/sshserver"
-    "go.containerssh.io/libcontainerssh/metadata"
 	"github.com/stretchr/testify/assert"
-    "go.containerssh.io/libcontainerssh/message"
+	publicAuth "go.containerssh.io/libcontainerssh/auth"
+	"go.containerssh.io/libcontainerssh/config"
+	"go.containerssh.io/libcontainerssh/internal/auth"
+	"go.containerssh.io/libcontainerssh/internal/geoip/dummy"
+	"go.containerssh.io/libcontainerssh/internal/metrics"
+	"go.containerssh.io/libcontainerssh/internal/metricsintegration"
+	"go.containerssh.io/libcontainerssh/internal/sshserver"
+	"go.containerssh.io/libcontainerssh/message"
+	"go.containerssh.io/libcontainerssh/metadata"
 
 	"golang.org/x/crypto/ssh"
 )
@@ -57,9 +57,11 @@ func testAuthSuccessful(
 			},
 		),
 		ConnectionID: sshserver.GenerateConnectionID(),
-		Metadata:     map[string]metadata.Value{},
-		Environment:  map[string]metadata.Value{},
-		Files:        map[string]metadata.BinaryValue{},
+		DynamicMetadata: metadata.DynamicMetadata{
+			Metadata:    map[string]metadata.Value{},
+			Environment: map[string]metadata.Value{},
+			Files:       map[string]metadata.BinaryValue{},
+		},
 	}
 
 	networkHandler, connectionMeta, err := handler.OnNetworkConnection(connectionMeta)
@@ -107,9 +109,11 @@ func testAuthFailed(
 			},
 		),
 		ConnectionID: sshserver.GenerateConnectionID(),
-		Metadata:     map[string]metadata.Value{},
-		Environment:  map[string]metadata.Value{},
-		Files:        map[string]metadata.BinaryValue{},
+		DynamicMetadata: metadata.DynamicMetadata{
+			Metadata:    map[string]metadata.Value{},
+			Environment: map[string]metadata.Value{},
+			Files:       map[string]metadata.BinaryValue{},
+		},
 	}
 
 	assert.Equal(t, float64(1), metricsCollector.GetMetric(metricsintegration.MetricNameConnections)[0].Value)

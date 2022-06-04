@@ -5,7 +5,7 @@ import (
 	"net"
 	"testing"
 
-    "go.containerssh.io/libcontainerssh/internal/test"
+	"go.containerssh.io/libcontainerssh/internal/test"
 )
 
 func TestPortAllocation(t *testing.T) {

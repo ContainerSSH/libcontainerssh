@@ -11,7 +11,7 @@ import (
 
 // RemoteAddress is an overlay for net.TCPAddr to provide JSON marshalling and unmarshalling.
 //
-//swagger:type string
+// swagger:type string
 type RemoteAddress net.TCPAddr
 
 // String returns a string representation of this address.
@@ -79,6 +79,41 @@ func (r *RemoteAddress) UnmarshalText(input []byte) error {
 	return nil
 }
 
+// DynamicMetadata contains the fields that can be returned in a webhook.
+//
+// swagger:model DynamicMetadata
+type DynamicMetadata struct {
+	// Metadata carries additional information from the authentication and configuration system to the backends.
+	// Backends can expose this information as container labels, environment variables, or other places. The return
+	// format is the name for the metadata value as a key, and a structure for the value that has a field to indicate
+	// if the field is sensitive, and its value. Sensitive fields may not be exposed to subsequent webhooks.
+	//
+	// required: false
+	// in: body
+	// example: {"token":{"value":"somevalue","sensitive":true}}
+	Metadata map[string]Value `json:"metadata,omitempty"`
+
+	// Environment is a set of key-value pairs provided by the authentication or configuration system and may be
+	// exposed by the backend. The return  format is the name for the metadata value as a key, and a structure for the
+	// value that has a field to indicate if the field is sensitive, and its value. Sensitive fields may not be exposed
+	// to subsequent webhooks.
+	//
+	// required: false
+	// in: body
+	// example: {"HOME":{"value":"/home/user","sensitive":false}}
+	Environment map[string]Value `json:"environment,omitempty"`
+
+	// Files is a key-value pair of file names and their content set by the authentication or configuration system
+	// and consumed by the backend. The return format is the name for the metadata value as a key, and a structure for
+	// the value that has a field to indicate if the field is sensitive, and its value. Sensitive fields may not be
+	// exposed to subsequent webhooks.
+	//
+	// required: false
+	// in: body
+	// example: {"/tmp/foo":{"value":"base-64 encoded file contents","sensitive":true}}
+	Files map[string]BinaryValue `json:"files,omitempty"`
+}
+
 // ConnectionMetadata holds a metadata structure passed around with a metadata. Its main purpose is to allow an
 // authentication or authorization module to configure data exposed to the configuration server or the backend.
 //
@@ -86,37 +121,17 @@ func (r *RemoteAddress) UnmarshalText(input []byte) error {
 type ConnectionMetadata struct {
 	// RemoteAddress is the IP address and port of the user trying to authenticate.
 	//
-	// required: true
-	// in: body
+	// swagger:ignore
 	RemoteAddress RemoteAddress `json:"remoteAddress"`
 
 	// ConnectionID is an opaque ID to identify the SSH connection in question.
 	//
 	// required: true
 	// in: body
+	// minLength: 5
 	ConnectionID string `json:"connectionId"`
 
-	// Metadata is a set of key-value pairs that carry additional information from the authentication and configuration
-	// system to the backends. Backends can expose this information as container labels, environment variables, or
-	// other places.
-	//
-	// required: false
-	// in: body
-	Metadata map[string]Value `json:"metadata,omitempty"`
-
-	// Environment is a set of key-value pairs provided by the authentication or configuration system and may be
-	// exposed by the backend.
-	//
-	// required: false
-	// in: body
-	Environment map[string]Value `json:"environment,omitempty"`
-
-	// Files is a key-value pair of file names and their content set by the authentication or configuration system
-	// and consumed by the backend.
-	//
-	// required: false
-	// in: body
-	Files map[string]BinaryValue `json:"files,omitempty"`
+	DynamicMetadata `json:",inline"`
 }
 
 func (meta ConnectionMetadata) StartAuthentication(
@@ -134,6 +149,11 @@ func (meta ConnectionMetadata) StartAuthentication(
 // NewTestMetadata provides a metadata set useful for testing.
 func NewTestMetadata() ConnectionMetadata {
 	return ConnectionMetadata{
+		DynamicMetadata: DynamicMetadata{
+			Metadata:    map[string]Value{},
+			Environment: map[string]Value{},
+			Files:       map[string]BinaryValue{},
+		},
 		RemoteAddress: RemoteAddress(
 			net.TCPAddr{
 				IP:   net.ParseIP("127.0.0.1"),
@@ -141,9 +161,6 @@ func NewTestMetadata() ConnectionMetadata {
 			},
 		),
 		ConnectionID: "0123456789ABCDEF",
-		Metadata:     map[string]Value{},
-		Environment:  map[string]Value{},
-		Files:        map[string]BinaryValue{},
 	}
 }
 
@@ -154,18 +171,18 @@ func NewTestMetadata() ConnectionMetadata {
 type ConnectionAuthPendingMetadata struct {
 	ConnectionMetadata `json:",inline"`
 
-	// ClientVersion contains the version string the connecting client sent if any. May be empty if the client did not
-	// provide a client version.
+	// ClientVersion contains the version string the connecting client sent.
 	//
-	// required: false
-	// in: body
+	// required: true
+	// example: SSH-2.0-some-client
+	// pattern: ^SSH-2.0-
 	ClientVersion string `json:"clientVersion"`
 
 	// Username is the username provided on login by the client. This may, but must not necessarily match the
 	// authenticated username.
 	//
 	// required: true
-	// in: body
+	// example: foo
 	Username string `json:"username"`
 }
 
@@ -195,15 +212,14 @@ func (c ConnectionAuthPendingMetadata) AuthFailed() ConnectionAuthenticatedMetad
 
 // ConnectionAuthenticatedMetadata is a variant of ConnectionMetadata which is used once the authentication has been
 // completed. It contains the AuthenticatedUsername provided by the authentication system.
+//
+// swagger:model ConnectionAuthenticatedMetadata
 type ConnectionAuthenticatedMetadata struct {
 	ConnectionAuthPendingMetadata `json:",inline"`
 
 	// AuthenticatedUsername contains the username that was actually verified. This may differ from LoginUsername when,
 	// for example OAuth2 or Kerberos authentication is used. This field is empty until the authentication phase is
 	// completed.
-	//
-	// required: false
-	// in: body
 	AuthenticatedUsername string `json:"authenticatedUsername,omitempty"`
 }
 

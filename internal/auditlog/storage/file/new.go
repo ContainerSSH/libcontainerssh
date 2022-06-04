@@ -7,10 +7,10 @@ import (
 	"path"
 	"sync"
 
-    "go.containerssh.io/libcontainerssh/config"
-    "go.containerssh.io/libcontainerssh/internal/auditlog/storage"
+	"go.containerssh.io/libcontainerssh/config"
+	"go.containerssh.io/libcontainerssh/internal/auditlog/storage"
 
-    "go.containerssh.io/libcontainerssh/log"
+	"go.containerssh.io/libcontainerssh/log"
 )
 
 // NewStorage Create a file storage that stores testdata in a local directory. The file storage cannot store metadata.

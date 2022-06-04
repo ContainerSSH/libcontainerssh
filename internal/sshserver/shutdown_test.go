@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-    "go.containerssh.io/libcontainerssh/internal/sshserver"
-    "go.containerssh.io/libcontainerssh/log"
+	"go.containerssh.io/libcontainerssh/internal/sshserver"
+	"go.containerssh.io/libcontainerssh/log"
 )
 
 func TestProperShutdown(t *testing.T) {

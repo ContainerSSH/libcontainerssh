@@ -1,9 +1,9 @@
 package asciinema
 
 import (
-    "go.containerssh.io/libcontainerssh/internal/auditlog/codec"
-    "go.containerssh.io/libcontainerssh/internal/geoip/geoipprovider"
-    "go.containerssh.io/libcontainerssh/log"
+	"go.containerssh.io/libcontainerssh/internal/auditlog/codec"
+	"go.containerssh.io/libcontainerssh/internal/geoip/geoipprovider"
+	"go.containerssh.io/libcontainerssh/log"
 )
 
 // NewEncoder Creates an encoder that writes in the Asciicast v2 format

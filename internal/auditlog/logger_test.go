@@ -11,15 +11,15 @@ import (
 	"testing"
 	"time"
 
-    "go.containerssh.io/libcontainerssh/auditlog/message"
-    "go.containerssh.io/libcontainerssh/config"
-    "go.containerssh.io/libcontainerssh/internal/auditlog"
-    "go.containerssh.io/libcontainerssh/internal/auditlog/codec/binary"
-    "go.containerssh.io/libcontainerssh/internal/auditlog/storage"
-    "go.containerssh.io/libcontainerssh/internal/auditlog/storage/file"
-    "go.containerssh.io/libcontainerssh/internal/geoip/dummy"
-    "go.containerssh.io/libcontainerssh/log"
 	"github.com/stretchr/testify/assert"
+	"go.containerssh.io/libcontainerssh/auditlog/message"
+	"go.containerssh.io/libcontainerssh/config"
+	"go.containerssh.io/libcontainerssh/internal/auditlog"
+	"go.containerssh.io/libcontainerssh/internal/auditlog/codec/binary"
+	"go.containerssh.io/libcontainerssh/internal/auditlog/storage"
+	"go.containerssh.io/libcontainerssh/internal/auditlog/storage/file"
+	"go.containerssh.io/libcontainerssh/internal/geoip/dummy"
+	"go.containerssh.io/libcontainerssh/log"
 )
 
 func newConnectionID() message.ConnectionID {

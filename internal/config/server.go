@@ -1,10 +1,10 @@
 package config
 
 import (
-    "go.containerssh.io/libcontainerssh/config"
-    http2 "go.containerssh.io/libcontainerssh/http"
-    "go.containerssh.io/libcontainerssh/log"
-    "go.containerssh.io/libcontainerssh/message"
+	"go.containerssh.io/libcontainerssh/config"
+	http2 "go.containerssh.io/libcontainerssh/http"
+	"go.containerssh.io/libcontainerssh/log"
+	"go.containerssh.io/libcontainerssh/message"
 )
 
 // NewServer returns a complete HTTP server that responds to the configuration requests.

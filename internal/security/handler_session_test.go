@@ -6,10 +6,10 @@ import (
 	"sync"
 	"testing"
 
-    "go.containerssh.io/libcontainerssh/config"
-    "go.containerssh.io/libcontainerssh/internal/sshserver"
-    "go.containerssh.io/libcontainerssh/log"
 	"github.com/stretchr/testify/assert"
+	"go.containerssh.io/libcontainerssh/config"
+	"go.containerssh.io/libcontainerssh/internal/sshserver"
+	"go.containerssh.io/libcontainerssh/log"
 )
 
 func TestEnvRequest(t *testing.T) {

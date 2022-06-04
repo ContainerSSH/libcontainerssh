@@ -4,8 +4,8 @@ import (
 	"crypto/tls"
 	"strings"
 
-    "go.containerssh.io/libcontainerssh/config"
-    "go.containerssh.io/libcontainerssh/log"
+	"go.containerssh.io/libcontainerssh/config"
+	"go.containerssh.io/libcontainerssh/log"
 )
 
 // NewClient creates a new HTTP client with the given configuration.

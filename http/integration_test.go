@@ -15,13 +15,13 @@ import (
 	"testing"
 	"time"
 
-    "go.containerssh.io/libcontainerssh/config"
-    http2 "go.containerssh.io/libcontainerssh/http"
-    "go.containerssh.io/libcontainerssh/internal/structutils"
-    "go.containerssh.io/libcontainerssh/internal/test"
-    "go.containerssh.io/libcontainerssh/log"
-    "go.containerssh.io/libcontainerssh/service"
 	"github.com/stretchr/testify/assert"
+	"go.containerssh.io/libcontainerssh/config"
+	http2 "go.containerssh.io/libcontainerssh/http"
+	"go.containerssh.io/libcontainerssh/internal/structutils"
+	"go.containerssh.io/libcontainerssh/internal/test"
+	"go.containerssh.io/libcontainerssh/log"
+	"go.containerssh.io/libcontainerssh/service"
 )
 
 type Request struct {
