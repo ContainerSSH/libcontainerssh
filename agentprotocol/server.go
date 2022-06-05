@@ -6,9 +6,9 @@ import (
 	"sync"
 	"time"
 
-    log "go.containerssh.io/libcontainerssh/log"
-    message "go.containerssh.io/libcontainerssh/message"
 	"github.com/fxamacker/cbor/v2"
+	log "go.containerssh.io/libcontainerssh/log"
+	message "go.containerssh.io/libcontainerssh/message"
 )
 
 const (
@@ -18,7 +18,7 @@ const (
 	CONNECTION_STATE_CLOSED
 )
 
-type Connection struct {
+type connection struct {
 	logger        log.Logger
 	lock          sync.Mutex
 	state         int
@@ -28,15 +28,15 @@ type Connection struct {
 	details       NewConnectionPayload
 	bufferReader  *io.PipeReader
 	bufferWriter  *io.PipeWriter
-	ctx           *ForwardCtx
+	ctx           *forwardCtx
 	closeCallback func() error
 }
 
-func (c *Connection) Read(p []byte) (n int, err error) {
+func (c *connection) Read(p []byte) (n int, err error) {
 	return c.bufferReader.Read(p)
 }
 
-func (c *Connection) Write(data []byte) (n int, err error) {
+func (c *connection) Write(data []byte) (n int, err error) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 L:
@@ -59,7 +59,7 @@ L:
 
 	packet := Packet{
 		Type:         PACKET_DATA,
-		ConnectionId: c.id,
+		ConnectionID: c.id,
 		Payload:      data,
 	}
 	err = c.ctx.writePacket(&packet)
@@ -74,7 +74,7 @@ L:
 	return len(data), nil
 }
 
-func (c *Connection) Close() error {
+func (c *connection) Close() error {
 	c.lock.Lock()
 
 	switch c.state {
@@ -86,7 +86,7 @@ func (c *Connection) Close() error {
 		c.lock.Unlock()
 		packet := Packet{
 			Type:         PACKET_CLOSE_CONNECTION,
-			ConnectionId: c.id,
+			ConnectionID: c.id,
 		}
 		return c.ctx.writePacket(&packet)
 	case CONNECTION_STATE_WAITCLOSE:
@@ -99,7 +99,7 @@ func (c *Connection) Close() error {
 	return fmt.Errorf("unknown state")
 }
 
-func (c *Connection) CloseImm() error {
+func (c *connection) CloseImmediately() error {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	if c.state != CONNECTION_STATE_WAITINIT && c.state != CONNECTION_STATE_STARTED && c.state != CONNECTION_STATE_WAITCLOSE {
@@ -116,7 +116,7 @@ func (c *Connection) CloseImm() error {
 	return nil
 }
 
-func (c *Connection) Accept() error {
+func (c *connection) Accept() error {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	if c.initiator {
@@ -129,12 +129,12 @@ func (c *Connection) Accept() error {
 	c.stateCond.Broadcast()
 	packet := Packet{
 		Type:         PACKET_SUCCESS,
-		ConnectionId: c.id,
+		ConnectionID: c.id,
 	}
 	return c.ctx.writePacket(&packet)
 }
 
-func (c *Connection) Reject() error {
+func (c *connection) Reject() error {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	if c.initiator {
@@ -147,32 +147,32 @@ func (c *Connection) Reject() error {
 	c.stateCond.Broadcast()
 	packet := Packet{
 		Type:         PACKET_ERROR,
-		ConnectionId: c.id,
+		ConnectionID: c.id,
 	}
 	return c.ctx.writePacket(&packet)
 }
 
-func (c *Connection) Details() NewConnectionPayload {
+func (c *connection) Details() NewConnectionPayload {
 	return c.details
 }
 
-func (c *Connection) setState(state int) {
+func (c *connection) setState(state int) {
 	c.lock.Lock()
 	c.state = state
 	c.stateCond.Broadcast()
 	c.lock.Unlock()
 }
 
-type ForwardCtx struct {
+type forwardCtx struct {
 	fromBackend       io.Reader
 	toBackend         io.Writer
 	logger            log.Logger
-	connectionChannel chan *Connection
+	connectionChannel chan Connection
 	stopped           bool
 
 	connectionId uint64
 	connMapMu    sync.RWMutex
-	connMap      map[uint64]*Connection
+	connMap      map[uint64]*connection
 	encoderMu    sync.Mutex
 	encoder      *cbor.Encoder
 	decoder      *cbor.Decoder
@@ -180,23 +180,23 @@ type ForwardCtx struct {
 	waitGroup sync.WaitGroup
 }
 
-func (c *ForwardCtx) writePacket(packet *Packet) error {
+func (c *forwardCtx) writePacket(packet *Packet) error {
 	c.encoderMu.Lock()
 	err := c.encoder.Encode(&packet)
 	c.encoderMu.Unlock()
 	return err
 }
 
-func (c *ForwardCtx) handleData(packet *Packet) {
+func (c *forwardCtx) handleData(packet *Packet) {
 	c.connMapMu.RLock()
-	conn, ok := c.connMap[packet.ConnectionId]
+	conn, ok := c.connMap[packet.ConnectionID]
 	c.connMapMu.RUnlock()
 	if !ok {
 		c.logger.Info(
 			message.NewMessage(
 				message.EAgentUnknownConnection,
 				"Received data packet with unknown connection id %d",
-				packet.ConnectionId,
+				packet.ConnectionID,
 			),
 		)
 		return
@@ -232,24 +232,24 @@ func (c *ForwardCtx) handleData(packet *Packet) {
 	}
 }
 
-func (c *ForwardCtx) handleClose(packet *Packet) {
+func (c *forwardCtx) handleClose(packet *Packet) {
 	c.connMapMu.Lock()
-	conn, ok := c.connMap[packet.ConnectionId]
+	conn, ok := c.connMap[packet.ConnectionID]
 	if !ok {
 		c.logger.Info(
 			message.NewMessage(
 				message.EAgentUnknownConnection,
 				"Received close packet with unknown connection id %d",
-				packet.ConnectionId,
+				packet.ConnectionID,
 			),
 		)
 		return
 	}
 	c.connMapMu.Unlock()
-	err := conn.CloseImm()
+	err := conn.CloseImmediately()
 	retPacket := Packet{
 		Type:         PACKET_SUCCESS,
-		ConnectionId: conn.id,
+		ConnectionID: conn.id,
 	}
 	if err != nil {
 		retPacket.Type = PACKET_ERROR
@@ -257,16 +257,16 @@ func (c *ForwardCtx) handleClose(packet *Packet) {
 	_ = c.writePacket(&retPacket)
 }
 
-func (c *ForwardCtx) handleSuccess(packet *Packet) {
+func (c *forwardCtx) handleSuccess(packet *Packet) {
 	c.connMapMu.Lock()
 	defer c.connMapMu.Unlock()
-	conn, ok := c.connMap[packet.ConnectionId]
+	conn, ok := c.connMap[packet.ConnectionID]
 	if !ok {
 		c.logger.Info(
 			message.NewMessage(
 				message.EAgentUnknownConnection,
 				"Received success packet with unknown connection id %d",
-				packet.ConnectionId,
+				packet.ConnectionID,
 			),
 		)
 		return
@@ -276,7 +276,7 @@ func (c *ForwardCtx) handleSuccess(packet *Packet) {
 	case CONNECTION_STATE_WAITINIT:
 		conn.setState(CONNECTION_STATE_STARTED)
 	case CONNECTION_STATE_WAITCLOSE:
-		_ = conn.CloseImm()
+		_ = conn.CloseImmediately()
 	default:
 		c.logger.Warning(
 			message.NewMessage(
@@ -287,16 +287,16 @@ func (c *ForwardCtx) handleSuccess(packet *Packet) {
 	}
 }
 
-func (c *ForwardCtx) handleError(packet *Packet) {
+func (c *forwardCtx) handleError(packet *Packet) {
 	c.connMapMu.Lock()
 	defer c.connMapMu.Unlock()
-	conn, ok := c.connMap[packet.ConnectionId]
+	conn, ok := c.connMap[packet.ConnectionID]
 	if !ok {
 		c.logger.Info(
 			message.NewMessage(
 				message.EAgentUnknownConnection,
 				"Received error packet with unknown connection id %d",
-				packet.ConnectionId,
+				packet.ConnectionID,
 			),
 		)
 		return
@@ -306,23 +306,23 @@ func (c *ForwardCtx) handleError(packet *Packet) {
 		message.NewMessage(
 			message.MAgentRemoteError,
 			"Received error packet for connection %d from remote",
-			packet.ConnectionId,
+			packet.ConnectionID,
 		),
 	)
 
-	_ = conn.CloseImm()
+	_ = conn.CloseImmediately()
 }
 
-func (c *ForwardCtx) handleNewConnection(packet *Packet) {
+func (c *forwardCtx) handleNewConnection(packet *Packet) {
 	newConnectionPacket, err := c.unmarshalNewConnection(packet.Payload)
 	if err != nil {
 		c.logger.Error("Error unmarshalling new connection payload", err)
 		return
 	}
 	pipeReader, pipeWriter := io.Pipe()
-	connection := Connection{
+	connection := connection{
 		state:        CONNECTION_STATE_WAITINIT,
-		id:           packet.ConnectionId,
+		id:           packet.ConnectionID,
 		details:      newConnectionPacket,
 		bufferReader: pipeReader,
 		bufferWriter: pipeWriter,
@@ -331,24 +331,24 @@ func (c *ForwardCtx) handleNewConnection(packet *Packet) {
 	}
 	connection.stateCond = sync.NewCond(&connection.lock)
 	c.connMapMu.Lock()
-	if _, ok := c.connMap[packet.ConnectionId]; ok {
+	if _, ok := c.connMap[packet.ConnectionID]; ok {
 		c.logger.Warning("Remote tried to open connection with re-used connectionId")
 		// Cannot send reject here, might interfere with other connection ?
 		c.connMapMu.Unlock()
 		return
 	}
-	if packet.ConnectionId <= c.connectionId {
+	if packet.ConnectionID <= c.connectionId {
 		c.logger.Warning("Suspicious connection, id <= prev")
 		// Can't send reject here either
 		c.connMapMu.Unlock()
 		return
 	}
-	if packet.ConnectionId != c.connectionId+1 {
+	if packet.ConnectionID != c.connectionId+1 {
 		c.logger.Warning("Suspicious connection, id not prev + 1")
 	}
 
-	c.connectionId = packet.ConnectionId
-	c.connMap[packet.ConnectionId] = &connection
+	c.connectionId = packet.ConnectionID
+	c.connMap[packet.ConnectionID] = &connection
 	c.waitGroup.Add(1)
 	c.connMapMu.Unlock()
 
@@ -361,7 +361,7 @@ func (c *ForwardCtx) handleNewConnection(packet *Packet) {
 	c.connectionChannel <- &connection
 }
 
-func (c *ForwardCtx) handleBackend() {
+func (c *forwardCtx) handleBackend() {
 	for {
 		packet := Packet{}
 		err := c.decoder.Decode(&packet)
@@ -401,7 +401,7 @@ func (c *ForwardCtx) handleBackend() {
 	}
 }
 
-func (c *ForwardCtx) unmarshalSetup(payload []byte) (SetupPacket, error) {
+func (c *forwardCtx) unmarshalSetup(payload []byte) (SetupPacket, error) {
 	packet := SetupPacket{}
 	err := cbor.Unmarshal(payload, &packet)
 	if err != nil {
@@ -410,7 +410,7 @@ func (c *ForwardCtx) unmarshalSetup(payload []byte) (SetupPacket, error) {
 	return packet, nil
 }
 
-func (c *ForwardCtx) unmarshalNewConnection(payload []byte) (NewConnectionPayload, error) {
+func (c *forwardCtx) unmarshalNewConnection(payload []byte) (NewConnectionPayload, error) {
 	packet := NewConnectionPayload{}
 	err := cbor.Unmarshal(payload, &packet)
 	if err != nil {
@@ -419,7 +419,7 @@ func (c *ForwardCtx) unmarshalNewConnection(payload []byte) (NewConnectionPayloa
 	return packet, nil
 }
 
-func (c *ForwardCtx) NewConnectionTCP(
+func (c *forwardCtx) NewConnectionTCP(
 	connectedAddress string,
 	connectedPort uint32,
 	origAddress string,
@@ -436,7 +436,7 @@ func (c *ForwardCtx) NewConnectionTCP(
 	)
 }
 
-func (c *ForwardCtx) NewConnectionUnix(
+func (c *forwardCtx) NewConnectionUnix(
 	path string,
 	closeFunc func() error,
 ) (io.ReadWriteCloser, error) {
@@ -450,7 +450,7 @@ func (c *ForwardCtx) NewConnectionUnix(
 	)
 }
 
-func (c *ForwardCtx) newConnection(
+func (c *forwardCtx) newConnection(
 	protocol string,
 	connectedAddress string,
 	connectedPort uint32,
@@ -476,7 +476,7 @@ func (c *ForwardCtx) newConnection(
 	}
 
 	bufferReader, bufferWriter := io.Pipe()
-	conn := Connection{
+	conn := connection{
 		state:         CONNECTION_STATE_WAITINIT,
 		initiator:     true,
 		bufferReader:  bufferReader,
@@ -498,7 +498,7 @@ func (c *ForwardCtx) newConnection(
 	c.connMapMu.Unlock()
 	err = c.writePacket(&Packet{
 		Type:         PACKET_NEW_CONNECTION,
-		ConnectionId: conn.id,
+		ConnectionID: conn.id,
 		Payload:      marInfo,
 	})
 	if err != nil {
@@ -513,15 +513,15 @@ func (c *ForwardCtx) newConnection(
 	return &conn, nil
 }
 
-func (c *ForwardCtx) init() {
-	c.connMap = make(map[uint64]*Connection)
-	c.connectionChannel = make(chan *Connection)
+func (c *forwardCtx) init() {
+	c.connMap = make(map[uint64]*connection)
+	c.connectionChannel = make(chan Connection)
 
 	c.encoder = cbor.NewEncoder(c.toBackend)
 	c.decoder = cbor.NewDecoder(c.fromBackend)
 }
 
-func (c *ForwardCtx) StartClient() (connectionType uint32, setupPacket SetupPacket, connChan chan *Connection, err error) {
+func (c *forwardCtx) StartClient() (connectionType uint32, setupPacket SetupPacket, connChan chan Connection, err error) {
 	c.init()
 
 	packet := Packet{}
@@ -568,7 +568,7 @@ func (c *ForwardCtx) StartClient() (connectionType uint32, setupPacket SetupPack
 	return setup.ConnectionType, setup, c.connectionChannel, nil
 }
 
-func (c *ForwardCtx) StartServerForward() (chan *Connection, error) {
+func (c *forwardCtx) StartServerForward() (chan Connection, error) {
 	c.init()
 
 	setupPacket := SetupPacket{
@@ -609,7 +609,7 @@ func (c *ForwardCtx) StartServerForward() (chan *Connection, error) {
 	return c.connectionChannel, nil
 }
 
-func (c *ForwardCtx) startReverseForwardingClient(setupPacket SetupPacket) (chan *Connection, error) {
+func (c *forwardCtx) startReverseForwardingClient(setupPacket SetupPacket) (chan Connection, error) {
 	c.init()
 
 	mar, err := cbor.Marshal(&setupPacket)
@@ -647,7 +647,7 @@ func (c *ForwardCtx) startReverseForwardingClient(setupPacket SetupPacket) (chan
 	return c.connectionChannel, nil
 }
 
-func (c *ForwardCtx) StartX11ForwardClient(singleConnection bool, screen string, authProtocol string, authCookie string) (chan *Connection, error) {
+func (c *forwardCtx) StartX11ForwardClient(singleConnection bool, screen string, authProtocol string, authCookie string) (chan Connection, error) {
 	setupPacket := SetupPacket{
 		ConnectionType:   CONNECTION_TYPE_X11,
 		Protocol:         "tcp",
@@ -660,7 +660,7 @@ func (c *ForwardCtx) StartX11ForwardClient(singleConnection bool, screen string,
 	return c.startReverseForwardingClient(setupPacket)
 }
 
-func (c *ForwardCtx) StartReverseForwardClient(bindHost string, bindPort uint32, singleConnection bool) (chan *Connection, error) {
+func (c *forwardCtx) StartReverseForwardClient(bindHost string, bindPort uint32, singleConnection bool) (chan Connection, error) {
 	setupPacket := SetupPacket{
 		ConnectionType:   CONNECTION_TYPE_PORT_FORWARD,
 		BindHost:         bindHost,
@@ -672,7 +672,7 @@ func (c *ForwardCtx) StartReverseForwardClient(bindHost string, bindPort uint32,
 	return c.startReverseForwardingClient(setupPacket)
 }
 
-func (c *ForwardCtx) StartReverseForwardClientUnix(path string, singleConnection bool) (chan *Connection, error) {
+func (c *forwardCtx) StartReverseForwardClientUnix(path string, singleConnection bool) (chan Connection, error) {
 	setupPacket := SetupPacket{
 		ConnectionType:   CONNECTION_TYPE_PORT_FORWARD,
 		BindHost:         path,
@@ -683,7 +683,7 @@ func (c *ForwardCtx) StartReverseForwardClientUnix(path string, singleConnection
 	return c.startReverseForwardingClient(setupPacket)
 }
 
-func (c *ForwardCtx) NoMoreConnections() error {
+func (c *forwardCtx) NoMoreConnections() error {
 	c.stopped = true
 	close(c.connectionChannel)
 	return c.writePacket(
@@ -693,11 +693,11 @@ func (c *ForwardCtx) NoMoreConnections() error {
 	)
 }
 
-func (c *ForwardCtx) WaitFinish() {
+func (c *forwardCtx) WaitFinish() {
 	c.waitGroup.Wait()
 }
 
-func (c *ForwardCtx) Kill() {
+func (c *forwardCtx) Kill() {
 	if !c.stopped {
 		_ = c.NoMoreConnections()
 	}
@@ -710,7 +710,7 @@ func (c *ForwardCtx) Kill() {
 		case <-t:
 		case <-time.After(5 * time.Second):
 			for _, conn := range c.connMap {
-				_ = conn.CloseImm()
+				_ = conn.CloseImmediately()
 			}
 		}
 	}()
