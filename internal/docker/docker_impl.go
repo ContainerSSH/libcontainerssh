@@ -12,15 +12,15 @@ import (
 	"sync"
 	"time"
 
-    "go.containerssh.io/libcontainerssh/config"
-    "go.containerssh.io/libcontainerssh/internal/metrics"
-    "go.containerssh.io/libcontainerssh/internal/structutils"
-    "go.containerssh.io/libcontainerssh/log"
-    "go.containerssh.io/libcontainerssh/message"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
+	"go.containerssh.io/libcontainerssh/config"
+	"go.containerssh.io/libcontainerssh/internal/metrics"
+	"go.containerssh.io/libcontainerssh/internal/structutils"
+	"go.containerssh.io/libcontainerssh/log"
+	"go.containerssh.io/libcontainerssh/message"
 )
 
 type dockerV20ClientFactory struct {
@@ -121,7 +121,11 @@ loop:
 	for {
 		var pullReader io.ReadCloser
 		d.backendRequestsMetric.Increment()
-		pullReader, lastError = d.dockerClient.ImagePull(ctx, image, types.ImagePullOptions{})
+		pullReader, lastError = d.dockerClient.ImagePull(ctx, image, types.ImagePullOptions{
+			PrivilegeFunc: func() (string, error) {
+				return d.login(ctx)
+			},
+		})
 		if lastError == nil {
 			_, lastError = ioutil.ReadAll(pullReader)
 			if lastError == nil {
@@ -160,6 +164,34 @@ loop:
 	)
 	d.logger.Debug(err)
 	return err
+}
+
+func (d *dockerV20Client) login(
+	ctx context.Context,
+) (string, error) {
+	if d.config.Execution.Auth == nil {
+		return "", message.NewMessage(
+			message.EDockerLoginRequired,
+			"Docker login required to pull container image. Have you forgot to set your ImagePullPolicy to 'Never'?",
+		)
+	}
+	body, err := d.dockerClient.RegistryLogin(ctx, *d.config.Execution.Auth)
+	if err != nil {
+		return "", message.Wrap(
+			err,
+			message.EDockerLoginFailed,
+			"Failed to log in to the image registry",
+		)
+	}
+	if body.IdentityToken == "" {
+		return "", message.Wrap(
+			err,
+			message.EDockerLoginFailed,
+			"Failed to log in to the image registry (%s)",
+			body.Status,
+		)
+	}
+	return body.IdentityToken, nil
 }
 
 func (d *dockerV20Client) createContainer(
