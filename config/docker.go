@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
 	specs "github.com/opencontainers/image-spec/specs-go/v1"
@@ -92,6 +93,9 @@ func (e DockerExecutionMode) Validate() error {
 // DockerExecutionConfig contains the configuration of what container to run in Docker.
 //goland:noinspection GoVetStructTag
 type DockerExecutionConfig struct {
+	// Auth contains the image registry authentication config
+	Auth *types.AuthConfig `json:"auth" yaml:"auth"`
+
 	// Launch contains the Docker-specific launch configuration.
 	Launch DockerLaunchConfig `json:",inline" yaml:",inline"`
 	// Mode influences how commands are executed.

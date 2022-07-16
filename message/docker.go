@@ -146,6 +146,15 @@ const MDockerImagePull = "DOCKER_IMAGE_PULL"
 // Docker documentation for details.
 const EDockerFailedImagePull = "DOCKER_IMAGE_PULL_FAILED"
 
+// EDockerLoginFailed indicates that the ContainerSSH Docker module failed to log in to the image registry to pull
+// the image.
+const EDockerLoginFailed = "DOCKER_LOGIN_FAILED"
+
+// EDockerLoginRequired indicates that the ContainerSSH Docker module needs registry authentication information
+// to pull the desired container image. This may be because your registry genuinely needs credentials, or you
+// forgot to set the pull policy to "Never" in case of a locally built image.
+const EDockerLoginRequired = "DOCKER_LOGIN_REQUIRED"
+
 // MDockerImagePullNeeded indicates that the ContainerSSH Docker module is checking if an image pull is needed.
 const MDockerImagePullNeeded = "DOCKER_IMAGE_PULL_NEEDED_CHECKING"
 
