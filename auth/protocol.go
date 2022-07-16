@@ -1,18 +1,20 @@
 package auth
 
 import (
-    "go.containerssh.io/libcontainerssh/metadata"
+	"go.containerssh.io/libcontainerssh/metadata"
 )
 
 // PasswordAuthRequest is an authentication request for password authentication.
 //
 // swagger:model PasswordAuthRequest
 type PasswordAuthRequest struct {
+	// swagger:allOf
 	metadata.ConnectionAuthPendingMetadata `json:",inline"`
 
 	// Password the user provided for authentication.
 	//
 	// required: true
+	// in: body
 	// swagger:strfmt Base64
 	Password string `json:"passwordBase64"`
 }
@@ -21,8 +23,11 @@ type PasswordAuthRequest struct {
 //
 // swagger:model PublicKeyAuthRequest
 type PublicKeyAuthRequest struct {
+	// swagger:allOf
 	metadata.ConnectionAuthPendingMetadata `json:",inline"`
 
+	// in: body
+	// required: true
 	PublicKey `json:",inline"`
 }
 
@@ -32,6 +37,7 @@ type PublicKeyAuthRequest struct {
 //
 // swagger:model AuthorizationRequest
 type AuthorizationRequest struct {
+	// swagger:allOf
 	metadata.ConnectionAuthenticatedMetadata `json:",inline"`
 }
 
@@ -39,7 +45,16 @@ type AuthorizationRequest struct {
 //
 // swagger:model AuthResponseBody
 type ResponseBody struct {
-	metadata.ConnectionAuthenticatedMetadata `json:",inline"`
+	metadata.DynamicMetadata `json:",inline"`
+
+	// AuthenticatedUsername contains the username that was actually verified. This may differ from LoginUsername when,
+	// for example OAuth2 or Kerberos authentication is used. This field is empty until the authentication phase is
+	// completed.
+	//
+	// required: false
+	// in: body
+	// example: systemusername
+	AuthenticatedUsername string `json:"authenticatedUsername,omitempty"`
 
 	// Success indicates if the authentication was successful.
 	//
@@ -55,5 +70,6 @@ type Response struct {
 	// The response body
 	//
 	// in: body
-	ResponseBody
+	// required: true
+	Body ResponseBody
 }

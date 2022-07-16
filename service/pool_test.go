@@ -5,9 +5,9 @@ import (
 	"sync"
 	"testing"
 
-    "go.containerssh.io/libcontainerssh/log"
-    "go.containerssh.io/libcontainerssh/service"
 	"github.com/stretchr/testify/assert"
+	"go.containerssh.io/libcontainerssh/log"
+	"go.containerssh.io/libcontainerssh/service"
 )
 
 func TestEmptyPool(t *testing.T) {

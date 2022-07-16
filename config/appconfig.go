@@ -3,12 +3,11 @@ package config
 import (
 	"fmt"
 
-    "go.containerssh.io/libcontainerssh/internal/structutils"
-    "go.containerssh.io/libcontainerssh/message"
+	"go.containerssh.io/libcontainerssh/internal/structutils"
+	"go.containerssh.io/libcontainerssh/message"
 )
 
 // AppConfig is the root configuration object of ContainerSSH.
-//goland:noinspection GoDeprecation
 type AppConfig struct {
 	// SSH contains the configuration for the SSH server.
 	// swagger:ignore
@@ -32,23 +31,30 @@ type AppConfig struct {
 	// swagger:ignore
 	Audit AuditLogConfig `json:"audit" yaml:"audit"`
 	// Health contains the configuration for the health check service.
+	// swagger:ignore
 	Health HealthConfig `json:"health" yaml:"health"`
 
 	// Security contains the security restrictions on what can be executed. This option can be changed from the config
 	// server.
 	Security SecurityConfig `json:"security" yaml:"security"`
 	// Backend defines which backend to use. This option can be changed from the config server.
+	//
+	// example: docker
 	Backend Backend `json:"backend" yaml:"backend" default:"docker"`
 	// Docker contains the configuration for the docker backend. This option can be changed from the config server.
 	Docker DockerConfig `json:"docker,omitempty" yaml:"docker"`
 	// DockerRun is a placeholder for the removed DockerRun backend. Filling this with anything but nil will yield a
 	// validation error.
+	//
+	// swagger:ignore
 	DockerRun interface{} `json:"dockerrun,omitempty"`
 	// Kubernetes contains the configuration for the kubernetes backend. This option can be changed from the config
 	// server.
 	Kubernetes KubernetesConfig `json:"kubernetes,omitempty" yaml:"kubernetes"`
 	// KubeRun is a placeholder for the removed DockerRun backend. Filling this with anything but nil will yield a
 	// validation error.
+	//
+	// swagger:ignore
 	KubeRun interface{} `json:"kuberun,omitempty"`
 	// SSHProxy is the configuration for the SSH proxy backend, which forwards requests to a backing SSH server.
 	SSHProxy SSHProxyConfig `json:"sshproxy,omitempty" yaml:"sshproxy"`

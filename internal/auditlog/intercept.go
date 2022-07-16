@@ -3,7 +3,7 @@ package auditlog
 import (
 	"io"
 
-    "go.containerssh.io/libcontainerssh/auditlog/message"
+	"go.containerssh.io/libcontainerssh/auditlog/message"
 )
 
 type interceptingReader struct {
@@ -36,15 +36,15 @@ func (i *interceptingWriter) Write(p []byte) (n int, err error) {
 
 type interceptingReadWriteCloser struct {
 	backend io.ReadWriteCloser
-	reader interceptingReader
-	writer interceptingWriter
+	reader  interceptingReader
+	writer  interceptingWriter
 }
 
-func (i interceptingReadWriteCloser) Read(p []byte) (int, error ) {
+func (i interceptingReadWriteCloser) Read(p []byte) (int, error) {
 	return i.reader.Read(p)
 }
 
-func (i interceptingReadWriteCloser) Write(p []byte) (int, error ) {
+func (i interceptingReadWriteCloser) Write(p []byte) (int, error) {
 	return i.writer.Write(p)
 }
 

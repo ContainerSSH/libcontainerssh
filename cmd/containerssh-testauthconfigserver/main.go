@@ -1,7 +1,7 @@
 // ContainerSSH Authentication and Configuration Server
 //
 // This OpenAPI document describes the API endpoints that are required for implementing an authentication
-// and configuration server for ContainerSSH. (See https://github.com/containerssh/libcontainerssh for details.)
+// and configuration server for ContainerSSH. (See https://github.com/containerssh/containerssh for details.)
 //
 //     Schemes: http, https
 //     Host: localhost
@@ -24,18 +24,41 @@ import (
 	"os/signal"
 	"syscall"
 
-    publicAuth "go.containerssh.io/libcontainerssh/auth"
-    "go.containerssh.io/libcontainerssh/config"
-    configWebhook "go.containerssh.io/libcontainerssh/config/webhook"
-    "go.containerssh.io/libcontainerssh/http"
-    "go.containerssh.io/libcontainerssh/internal/auth"
-    "go.containerssh.io/libcontainerssh/log"
-    "go.containerssh.io/libcontainerssh/metadata"
-    "go.containerssh.io/libcontainerssh/service"
 	"github.com/docker/docker/api/types/container"
+	"go.containerssh.io/libcontainerssh/auth"
+	authWebhook "go.containerssh.io/libcontainerssh/auth/webhook"
+	"go.containerssh.io/libcontainerssh/config"
+	configWebhook "go.containerssh.io/libcontainerssh/config/webhook"
+	"go.containerssh.io/libcontainerssh/http"
+	"go.containerssh.io/libcontainerssh/log"
+	"go.containerssh.io/libcontainerssh/metadata"
+	"go.containerssh.io/libcontainerssh/service"
 )
 
 type authHandler struct {
+}
+
+// swagger:operation POST /authz Authorization authorize
+//
+// Authorization
+//
+// ---
+// parameters:
+// - name: request
+//   in: body
+//   description: The authentication request
+//   required: true
+//   schema:
+//     "$ref": "#/definitions/PasswordAuthRequest"
+// responses:
+//   "200":
+//     "$ref": "#/responses/AuthResponse"
+func (a *authHandler) OnAuthorization(meta metadata.ConnectionAuthenticatedMetadata) (
+	bool,
+	metadata.ConnectionAuthenticatedMetadata,
+	error,
+) {
+	return true, meta.Authenticated(meta.Username), nil
 }
 
 // swagger:operation POST /password Authentication authPassword
@@ -53,17 +76,17 @@ type authHandler struct {
 // responses:
 //   "200":
 //     "$ref": "#/responses/AuthResponse"
-func (a *authHandler) OnPassword(meta metadata.ConnectionAuthPendingMetadata, Password []byte) (
+func (a *authHandler) OnPassword(metadata metadata.ConnectionAuthPendingMetadata, password []byte) (
 	bool,
 	metadata.ConnectionAuthenticatedMetadata,
 	error,
 ) {
 	if os.Getenv("CONTAINERSSH_ALLOW_ALL") == "1" ||
-		meta.Username == "foo" ||
-		meta.Username == "busybox" {
-		return true, meta.Authenticated(meta.Username), nil
+		metadata.Username == "foo" ||
+		metadata.Username == "busybox" {
+		return true, metadata.Authenticated(metadata.Username), nil
 	}
-	return false, meta.AuthFailed(), nil
+	return false, metadata.AuthFailed(), nil
 }
 
 // swagger:operation POST /pubkey Authentication authPubKey
@@ -81,33 +104,7 @@ func (a *authHandler) OnPassword(meta metadata.ConnectionAuthPendingMetadata, Pa
 // responses:
 //   "200":
 //     "$ref": "#/responses/AuthResponse"
-func (a *authHandler) OnPubKey(meta metadata.ConnectionAuthPendingMetadata, publicKey publicAuth.PublicKey) (
-	bool,
-	metadata.ConnectionAuthenticatedMetadata,
-	error,
-) {
-	if meta.Username == "foo" || meta.Username == "busybox" {
-		return true, meta.Authenticated(meta.Username), nil
-	}
-	return false, meta.AuthFailed(), nil
-}
-
-// swagger:operation POST /authz Authentication authz
-//
-// Authorization
-//
-// ---
-// parameters:
-// - name: request
-//   in: body
-//   description: The authorization request
-//   required: true
-//   schema:
-//     "$ref": "#/definitions/AuthorizationRequest"
-// responses:
-//   "200":
-//     "$ref": "#/responses/AuthResponse"
-func (a *authHandler) OnAuthorization(meta metadata.ConnectionAuthenticatedMetadata) (
+func (a *authHandler) OnPubKey(meta metadata.ConnectionAuthPendingMetadata, publicKey auth.PublicKey) (
 	bool,
 	metadata.ConnectionAuthenticatedMetadata,
 	error,
@@ -139,8 +136,8 @@ func (c *configHandler) OnConfig(request config.Request) (config.AppConfig, erro
 	cfg := config.AppConfig{}
 
 	if request.Username == "busybox" {
-		cfg.Docker.Execution.Launch.ContainerConfig = &container.Config{}
-		cfg.Docker.Execution.Launch.ContainerConfig.Image = "busybox"
+		cfg.Docker.Execution.DockerLaunchConfig.ContainerConfig = &container.Config{}
+		cfg.Docker.Execution.DockerLaunchConfig.ContainerConfig.Image = "busybox"
 		cfg.Docker.Execution.DisableAgent = true
 		cfg.Docker.Execution.Mode = config.DockerExecutionModeSession
 		cfg.Docker.Execution.ShellCommand = []string{"/bin/sh"}
@@ -168,15 +165,17 @@ func (h *handler) ServeHTTP(writer goHttp.ResponseWriter, request *goHttp.Reques
 }
 
 func main() {
-	logger, err := log.NewLogger(config.LogConfig{
-		Level:       config.LogLevelDebug,
-		Format:      config.LogFormatLJSON,
-		Destination: config.LogDestinationStdout,
-	})
+	logger, err := log.NewLogger(
+		config.LogConfig{
+			Level:       config.LogLevelDebug,
+			Format:      config.LogFormatLJSON,
+			Destination: config.LogDestinationStdout,
+		},
+	)
 	if err != nil {
 		panic(err)
 	}
-	authHTTPHandler := auth.NewHandler(&authHandler{}, logger)
+	authHTTPHandler := authWebhook.NewHandler(&authHandler{}, logger)
 	configHTTPHandler, err := configWebhook.NewHandler(&configHandler{}, logger)
 	if err != nil {
 		panic(err)
@@ -207,10 +206,12 @@ func main() {
 		func(s service.Service, l service.Lifecycle) {
 			println("Test Auth-Config Server is now running...")
 			close(running)
-		}).OnStopped(
+		},
+	).OnStopped(
 		func(s service.Service, l service.Lifecycle) {
 			close(stopped)
-		})
+		},
+	)
 	exitSignalList := []os.Signal{os.Interrupt, os.Kill, syscall.SIGINT, syscall.SIGTERM}
 	exitSignals := make(chan os.Signal, 1)
 	signal.Notify(exitSignals, exitSignalList...)

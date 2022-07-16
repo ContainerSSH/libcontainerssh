@@ -3,7 +3,7 @@ package codec
 import (
 	"io"
 
-    "go.containerssh.io/libcontainerssh/internal/auditlog/storage"
+	"go.containerssh.io/libcontainerssh/internal/auditlog/storage"
 )
 
 // NewStorageWriterProxy Creates a storage writer that proxies to a traditional writer and drops the metadata.

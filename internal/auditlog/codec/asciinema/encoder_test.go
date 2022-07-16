@@ -8,11 +8,11 @@ import (
 	"testing"
 	"time"
 
-    "go.containerssh.io/libcontainerssh/auditlog/message"
-    asciinema2 "go.containerssh.io/libcontainerssh/internal/auditlog/codec/asciinema"
-    "go.containerssh.io/libcontainerssh/internal/geoip/dummy"
-    "go.containerssh.io/libcontainerssh/log"
 	"github.com/stretchr/testify/assert"
+	"go.containerssh.io/libcontainerssh/auditlog/message"
+	asciinema2 "go.containerssh.io/libcontainerssh/internal/auditlog/codec/asciinema"
+	"go.containerssh.io/libcontainerssh/internal/geoip/dummy"
+	"go.containerssh.io/libcontainerssh/log"
 )
 
 type writer struct {

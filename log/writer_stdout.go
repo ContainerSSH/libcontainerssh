@@ -4,7 +4,7 @@ import (
 	"io"
 	"sync"
 
-    "go.containerssh.io/libcontainerssh/config"
+	"go.containerssh.io/libcontainerssh/config"
 )
 
 // newStdoutWriter creates a log writer that writes to the stdout (io.Writer) in the specified format.

@@ -6,9 +6,9 @@ import (
 	"sync"
 	"time"
 
-    log "go.containerssh.io/libcontainerssh/log"
-    message "go.containerssh.io/libcontainerssh/message"
 	"github.com/fxamacker/cbor/v2"
+	log "go.containerssh.io/libcontainerssh/log"
+	message "go.containerssh.io/libcontainerssh/message"
 )
 
 const (

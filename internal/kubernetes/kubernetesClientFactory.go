@@ -3,8 +3,8 @@ package kubernetes
 import (
 	"context"
 
-    "go.containerssh.io/libcontainerssh/config"
-    "go.containerssh.io/libcontainerssh/log"
+	"go.containerssh.io/libcontainerssh/config"
+	"go.containerssh.io/libcontainerssh/log"
 )
 
 // kubernetesClientFactory creates a kubernetesClient based on a configuration

@@ -37,6 +37,9 @@ type SecurityConfig struct {
 
 	// MaxSessions drives how many session channels can be open at the same time for a single network connection.
 	// -1 means unlimited. It is strongly recommended to configure this to a sane value, e.g. 10.
+	//
+	// default: -1
+	// example: 10
 	MaxSessions int `json:"maxSessions" yaml:"maxSessions" default:"-1"`
 }
 
@@ -69,15 +72,19 @@ func (c SecurityConfig) Validate() error {
 	return nil
 }
 
-// SecurityEnvConfig configures setting environment variables.
+// SecurityEnvConfig configures whether to allow or deny setting environment variables from the SSH client.
 type SecurityEnvConfig struct {
 	// Mode configures how to treat environment variable requests by SSH clients.
 	Mode SecurityExecutionPolicy `json:"mode" yaml:"mode" default:""`
-	// Allow takes effect when Mode is ExecutionPolicyFilter and only allows the specified environment variables to be
-	// set.
+	// Allow takes effect when Mode is "filter" and only allows the specified environment variables to be
+	// set. Environment variables that are not listed are denied.
+	//
+	// example: ["TERM"]
 	Allow []string `json:"allow" yaml:"allow"`
-	// Allow takes effect when Mode is not ExecutionPolicyDisable and disallows the specified environment variables to
-	// be set.
+	// Deny takes effect when Mode is not "filter" and disallows the specified environment variables to
+	// be set. All other environment variables are allowed.
+	//
+	// example: ["KILL"]
 	Deny []string `json:"deny" yaml:"deny"`
 }
 
@@ -95,6 +102,8 @@ type CommandConfig struct {
 	Mode SecurityExecutionPolicy `json:"mode" yaml:"mode" default:""`
 	// Allow takes effect when Mode is ExecutionPolicyFilter and only allows the specified commands to be
 	// executed. Note that the match an exact match is performed to avoid shell injections, etc.
+	//
+	// example: ["/allow/this/command"]
 	Allow []string `json:"allow" yaml:"allow"`
 }
 
@@ -123,11 +132,17 @@ func (s SecurityShellConfig) Validate() error {
 // SubsystemConfig controls shell executions via SSH.
 type SubsystemConfig struct {
 	// Mode configures how to treat subsystem requests by SSH clients.
+	//
+	// example: filter
 	Mode SecurityExecutionPolicy `json:"mode" yaml:"mode" default:""`
 	// Allow takes effect when Mode is ExecutionPolicyFilter and only allows the specified subsystems to be
 	// executed.
+	//
+	// example: ["sftp"]
 	Allow []string `json:"allow" yaml:"allow"`
 	// Allow takes effect when Mode is not ExecutionPolicyDisable and disallows the specified subsystems to be executed.
+	//
+	// example: ["sftp"]
 	Deny []string `json:"deny" yaml:"deny"`
 }
 
@@ -139,20 +154,31 @@ func (s SubsystemConfig) Validate() error {
 	return nil
 }
 
+// ForwardingConfig configures the various security settings around forwarding network connections and X11 requests.
 type ForwardingConfig struct {
 	// ReverseForwardingMode configures how to treat reverse port forwarding requests from the container to the client.
+	//
+	// default: disable
 	ReverseForwardingMode SecurityExecutionPolicy `json:"reverseForwardingMode" yaml:"reverseForwardingMode" default:"disable"`
 
 	// ForwardingMode configures how to treat port forwarding requests from the client to the container. Enabling this setting also allows using ContainerSSH as a SOCKs proxy.
+	//
+	// default: disable
 	ForwardingMode SecurityExecutionPolicy `json:"forwardingMode" yaml:"forwardingMode" default:"disable"`
 
 	// SocketForwardingMode configures how to treat connection requests from the client to a unix socket in the container.
+	//
+	// default: disable
 	SocketForwardingMode SecurityExecutionPolicy `json:"socketForwardingMode" yaml:"socketForwardingMode" default:"disable"`
 
 	// SocketListenMode configures how to treat requests to listen for connections to a unix socket in the container.
+	//
+	// default: disable
 	SocketListenMode SecurityExecutionPolicy `json:"socketListenMode" yaml:"socketListenMode" default:"disable"`
 
 	// X11forwardingMode configures how to treat X11 forwarding requests from the container to the client
+	//
+	// default: disable
 	X11ForwardingMode SecurityExecutionPolicy `json:"x11ForwardingMode" yaml:"x11ForwardingMode" default:"disable"`
 }
 
@@ -208,6 +234,8 @@ func (s SecuritySignalConfig) Validate() error {
 }
 
 // SecurityExecutionPolicy drives how to treat a certain request.
+//
+// swagger:enum SecurityExecutionPolicy
 type SecurityExecutionPolicy string
 
 const (

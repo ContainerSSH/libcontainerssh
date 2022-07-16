@@ -8,12 +8,12 @@ import (
 	"sync"
 	"testing"
 
-    "go.containerssh.io/libcontainerssh/config"
-    "go.containerssh.io/libcontainerssh/internal/sshserver"
-    "go.containerssh.io/libcontainerssh/log"
-    "go.containerssh.io/libcontainerssh/metadata"
-    "go.containerssh.io/libcontainerssh/message"
 	"github.com/stretchr/testify/assert"
+	"go.containerssh.io/libcontainerssh/config"
+	"go.containerssh.io/libcontainerssh/internal/sshserver"
+	"go.containerssh.io/libcontainerssh/log"
+	"go.containerssh.io/libcontainerssh/message"
+	"go.containerssh.io/libcontainerssh/metadata"
 
 	"golang.org/x/crypto/ssh"
 )
@@ -57,9 +57,11 @@ func createChannelMetadata(i int) metadata.ChannelMetadata {
 						},
 					),
 					ConnectionID: "asdf",
-					Metadata:     nil,
-					Environment:  nil,
-					Files:        nil,
+					DynamicMetadata: metadata.DynamicMetadata{
+						Metadata:    nil,
+						Environment: nil,
+						Files:       nil,
+					},
 				},
 				ClientVersion: "",
 				Username:      "test",

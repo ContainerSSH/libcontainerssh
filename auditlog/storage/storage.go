@@ -1,7 +1,7 @@
 package storage
 
 import (
-    "go.containerssh.io/libcontainerssh/internal/auditlog/storage"
+	"go.containerssh.io/libcontainerssh/internal/auditlog/storage"
 )
 
 type Storage interface {

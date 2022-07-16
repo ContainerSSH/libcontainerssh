@@ -1,8 +1,8 @@
 package log
 
 import (
-    "go.containerssh.io/libcontainerssh/config"
-    messageCodes "go.containerssh.io/libcontainerssh/message"
+	"go.containerssh.io/libcontainerssh/config"
+	messageCodes "go.containerssh.io/libcontainerssh/message"
 )
 
 type logger struct {

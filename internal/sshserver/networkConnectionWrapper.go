@@ -3,7 +3,7 @@ package sshserver
 import (
 	"context"
 
-    "go.containerssh.io/libcontainerssh/metadata"
+	"go.containerssh.io/libcontainerssh/metadata"
 )
 
 // HACK: check HACKS.md "OnHandshakeSuccess conformanceTestHandler"

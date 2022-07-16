@@ -3,8 +3,8 @@ package structutils_test
 import (
 	"testing"
 
-    "go.containerssh.io/libcontainerssh/internal/structutils"
 	"github.com/stretchr/testify/assert"
+	"go.containerssh.io/libcontainerssh/internal/structutils"
 )
 
 type copyTest struct {

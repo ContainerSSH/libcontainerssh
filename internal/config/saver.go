@@ -1,7 +1,7 @@
 package config
 
 import (
-    "go.containerssh.io/libcontainerssh/config"
+	"go.containerssh.io/libcontainerssh/config"
 )
 
 // ConfigSaver is a utility to store configuration

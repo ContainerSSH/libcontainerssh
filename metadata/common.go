@@ -18,13 +18,11 @@ type BinaryValue struct {
 	// Value contains the binary data for the current value.
 	//
 	// required: true
-	// in: body
 	// swagger:strfmt: byte
 	Value []byte `json:"value"`
 	// Sensitive indicates that the metadata value contains sensitive data and should not be transmitted to
 	// servers unnecessarily.
 	//
 	// required: false
-	// in: body
 	Sensitive bool `json:"sensitive"`
 }

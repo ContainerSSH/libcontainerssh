@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"io"
 
-    "go.containerssh.io/libcontainerssh/auth"
-    auth2 "go.containerssh.io/libcontainerssh/internal/auth"
-    message2 "go.containerssh.io/libcontainerssh/message"
-    "go.containerssh.io/libcontainerssh/metadata"
+	"go.containerssh.io/libcontainerssh/auth"
+	auth2 "go.containerssh.io/libcontainerssh/internal/auth"
+	message2 "go.containerssh.io/libcontainerssh/message"
+	"go.containerssh.io/libcontainerssh/metadata"
 
 	"golang.org/x/crypto/ssh"
 )
@@ -197,7 +197,7 @@ type ReverseForward interface {
 	// path is the container-based path to the unix socket that is being forwarded
 	NewChannelUnix(path string) (ForwardChannel, uint64, error)
 	// NewChannelX11 requests the opening of an X11 channel
-	// 
+	//
 	// originatorAddress is the address that initiated the X11 request
 	// originatorPort is the port that originated the X11 request
 	NewChannelX11(originatorAddress string, originatorPort uint32) (ForwardChannel, uint64, error)
@@ -274,7 +274,7 @@ type SSHConnectionHandler interface {
 	// OnRequestCancelTCPReverseForward is called when a request to cancel an existing tcp port forwarding is received
 	//
 	// bindHost is the interface of the forwarding to be cancelled
-	// bindPort is the port of the forwarding to be cancelled 
+	// bindPort is the port of the forwarding to be cancelled
 	OnRequestCancelTCPReverseForward(bindHost string, bindPort uint32) error
 
 	// OnDirectStreamLocal is called when a new forwarding channel is opened to connect and forward data to a unix socket within a container

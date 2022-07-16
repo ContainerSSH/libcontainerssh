@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-    "go.containerssh.io/libcontainerssh/config"
+	"go.containerssh.io/libcontainerssh/config"
 )
 
 var testLoggerActive = false

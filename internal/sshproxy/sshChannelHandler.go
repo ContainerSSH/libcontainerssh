@@ -6,23 +6,23 @@ import (
 	"io"
 	"sync"
 
-    "go.containerssh.io/libcontainerssh/internal/sshserver"
-    ssh2 "go.containerssh.io/libcontainerssh/internal/ssh"
-    "go.containerssh.io/libcontainerssh/log"
-    "go.containerssh.io/libcontainerssh/message"
+	ssh2 "go.containerssh.io/libcontainerssh/internal/ssh"
+	"go.containerssh.io/libcontainerssh/internal/sshserver"
+	"go.containerssh.io/libcontainerssh/log"
+	"go.containerssh.io/libcontainerssh/message"
 	"golang.org/x/crypto/ssh"
 )
 
 type sshChannelHandler struct {
 	lock              *sync.Mutex
-	backingChannel     ssh.Channel
+	backingChannel    ssh.Channel
 	connectionHandler *sshConnectionHandler
-	requests           <-chan *ssh.Request
-	session            sshserver.SessionChannel
-	started            bool
-	logger             log.Logger
-	done               chan struct{}
-	exited             bool
+	requests          <-chan *ssh.Request
+	session           sshserver.SessionChannel
+	started           bool
+	logger            log.Logger
+	done              chan struct{}
+	exited            bool
 	ssh               *sshConnectionHandler
 }
 
@@ -376,9 +376,9 @@ func (s *sshChannelHandler) OnX11Request(
 	defer s.lock.Unlock()
 	payload := ssh2.X11RequestPayload{
 		SingleConnection: singleConnection,
-		Protocol: protocol,
-		Cookie: cookie,
-		Screen: screen,
+		Protocol:         protocol,
+		Cookie:           cookie,
+		Screen:           screen,
 	}
 	if err := s.sendRequest("x11-req", payload); err != nil {
 		err := message.WrapUser(

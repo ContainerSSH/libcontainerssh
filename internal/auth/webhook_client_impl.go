@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
-    "go.containerssh.io/libcontainerssh/auth"
-    "go.containerssh.io/libcontainerssh/http"
-    "go.containerssh.io/libcontainerssh/internal/metrics"
-    "go.containerssh.io/libcontainerssh/log"
-    "go.containerssh.io/libcontainerssh/message"
-    "go.containerssh.io/libcontainerssh/metadata"
+	"go.containerssh.io/libcontainerssh/auth"
+	"go.containerssh.io/libcontainerssh/http"
+	"go.containerssh.io/libcontainerssh/internal/metrics"
+	"go.containerssh.io/libcontainerssh/log"
+	"go.containerssh.io/libcontainerssh/message"
+	"go.containerssh.io/libcontainerssh/metadata"
 )
 
 type webhookClient struct {
@@ -132,7 +132,14 @@ loop:
 		lastError = client.authServerRequest(url, authRequest, authResponse)
 		if lastError == nil {
 			authenticatedMeta := meta.Authenticated("")
-			authenticatedMeta.Merge(authResponse.ConnectionAuthenticatedMetadata)
+			authenticatedMeta.Merge(metadata.ConnectionAuthenticatedMetadata{
+				ConnectionAuthPendingMetadata: metadata.ConnectionAuthPendingMetadata{
+					ConnectionMetadata: metadata.ConnectionMetadata{
+						DynamicMetadata: authResponse.DynamicMetadata,
+					},
+				},
+				AuthenticatedUsername: authResponse.AuthenticatedUsername,
+			})
 			client.logAuthResponse(logger, method, authResponse, lastLabels, authenticatedMeta.RemoteAddress.IP)
 
 			return &webhookClientContext{
@@ -303,7 +310,14 @@ loop:
 		lastError = client.authServerRequest(url, authzRequest, authResponse)
 		if lastError == nil {
 			authenticatedMeta := meta.Authenticated("")
-			authenticatedMeta.Merge(authResponse.ConnectionAuthenticatedMetadata)
+			authenticatedMeta.Merge(metadata.ConnectionAuthenticatedMetadata{
+				ConnectionAuthPendingMetadata: metadata.ConnectionAuthPendingMetadata{
+					ConnectionMetadata: metadata.ConnectionMetadata{
+						DynamicMetadata: authResponse.DynamicMetadata,
+					},
+				},
+				AuthenticatedUsername: authResponse.AuthenticatedUsername,
+			})
 			client.logAuthzResponse(authenticatedMeta, logger, authResponse, lastLabels)
 			return &webhookClientContext{
 				authenticatedMeta,

@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"testing"
 
-    "go.containerssh.io/libcontainerssh/config"
-    "go.containerssh.io/libcontainerssh/message"
 	"github.com/stretchr/testify/assert"
+	"go.containerssh.io/libcontainerssh/config"
+	"go.containerssh.io/libcontainerssh/message"
 
-    "go.containerssh.io/libcontainerssh/log"
+	"go.containerssh.io/libcontainerssh/log"
 )
 
 func TestLogLevelFiltering(t *testing.T) {

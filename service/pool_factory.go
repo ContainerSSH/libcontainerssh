@@ -3,7 +3,7 @@ package service
 import (
 	"sync"
 
-    "go.containerssh.io/libcontainerssh/log"
+	"go.containerssh.io/libcontainerssh/log"
 )
 
 // NewPool creates a new service pool that can be used to run and manage multiple services in parallel.

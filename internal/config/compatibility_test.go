@@ -6,12 +6,12 @@ import (
 	"os"
 	"testing"
 
-    configuration "go.containerssh.io/libcontainerssh/config"
-    "go.containerssh.io/libcontainerssh/internal/config"
-    "go.containerssh.io/libcontainerssh/internal/structutils"
-    "go.containerssh.io/libcontainerssh/log"
-    "go.containerssh.io/libcontainerssh/message"
 	"github.com/stretchr/testify/assert"
+	configuration "go.containerssh.io/libcontainerssh/config"
+	"go.containerssh.io/libcontainerssh/internal/config"
+	"go.containerssh.io/libcontainerssh/internal/structutils"
+	"go.containerssh.io/libcontainerssh/log"
+	"go.containerssh.io/libcontainerssh/message"
 )
 
 // Test04Compatibility tests if a configuration file for ContainerSSH version 0.4 can be read.

@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-    "go.containerssh.io/libcontainerssh/internal/metrics"
+	"go.containerssh.io/libcontainerssh/internal/metrics"
 )
 
 // TestCounter tests the functionality of counters

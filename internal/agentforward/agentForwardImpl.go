@@ -6,9 +6,9 @@ import (
 	"io"
 	"sync"
 
-    protocol "go.containerssh.io/libcontainerssh/agentprotocol"
-    "go.containerssh.io/libcontainerssh/internal/sshserver"
-    "go.containerssh.io/libcontainerssh/log"
+	protocol "go.containerssh.io/libcontainerssh/agentprotocol"
+	"go.containerssh.io/libcontainerssh/internal/sshserver"
+	"go.containerssh.io/libcontainerssh/log"
 )
 
 type agentForward struct {

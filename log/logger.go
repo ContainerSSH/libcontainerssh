@@ -1,8 +1,8 @@
 package log
 
 import (
-    "go.containerssh.io/libcontainerssh/config"
-    "go.containerssh.io/libcontainerssh/message"
+	"go.containerssh.io/libcontainerssh/config"
+	"go.containerssh.io/libcontainerssh/message"
 )
 
 // Logger The logger interface provides logging facilities on various levels.

@@ -5,12 +5,12 @@ import (
 	"errors"
 	"time"
 
-    "go.containerssh.io/libcontainerssh/config"
-    "go.containerssh.io/libcontainerssh/http"
-    "go.containerssh.io/libcontainerssh/internal/metrics"
-    "go.containerssh.io/libcontainerssh/log"
-    "go.containerssh.io/libcontainerssh/message"
-    "go.containerssh.io/libcontainerssh/metadata"
+	"go.containerssh.io/libcontainerssh/config"
+	"go.containerssh.io/libcontainerssh/http"
+	"go.containerssh.io/libcontainerssh/internal/metrics"
+	"go.containerssh.io/libcontainerssh/log"
+	"go.containerssh.io/libcontainerssh/message"
+	"go.containerssh.io/libcontainerssh/metadata"
 )
 
 type client struct {
@@ -52,7 +52,13 @@ loop:
 		lastError = c.configServerRequest(&request, &response)
 		if lastError == nil {
 			c.logConfigResponse(logger)
-			return response.Config, response.ConnectionAuthenticatedMetadata, nil
+			return response.Config, metadata.ConnectionAuthenticatedMetadata{
+				ConnectionAuthPendingMetadata: metadata.ConnectionAuthPendingMetadata{
+					ConnectionMetadata: metadata.ConnectionMetadata{
+						DynamicMetadata: response.DynamicMetadata,
+					},
+				},
+			}, nil
 		}
 		reason := c.getReason(lastError)
 		lastLabels = append(lastLabels, metrics.Label("reason", reason))

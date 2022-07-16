@@ -3,8 +3,8 @@ package codec
 import (
 	"io"
 
-    "go.containerssh.io/libcontainerssh/auditlog/message"
-    "go.containerssh.io/libcontainerssh/internal/auditlog/storage"
+	"go.containerssh.io/libcontainerssh/auditlog/message"
+	"go.containerssh.io/libcontainerssh/internal/auditlog/storage"
 )
 
 // Encoder is a module that is responsible for receiving audit log messages and writing them to a writer.

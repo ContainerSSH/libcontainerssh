@@ -4,8 +4,8 @@ import (
 	"runtime"
 	"testing"
 
-    "go.containerssh.io/libcontainerssh/config"
-    "go.containerssh.io/libcontainerssh/message"
+	"go.containerssh.io/libcontainerssh/config"
+	"go.containerssh.io/libcontainerssh/message"
 )
 
 func newGoTest(t *testing.T) Writer {

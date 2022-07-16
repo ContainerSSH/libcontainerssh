@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"testing"
 
-    "go.containerssh.io/libcontainerssh/config"
-    "go.containerssh.io/libcontainerssh/internal/structutils"
 	"github.com/stretchr/testify/assert"
+	"go.containerssh.io/libcontainerssh/config"
+	"go.containerssh.io/libcontainerssh/internal/structutils"
 	"gopkg.in/yaml.v3"
 )
 

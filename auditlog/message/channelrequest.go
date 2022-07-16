@@ -100,7 +100,7 @@ func (p PayloadChannelRequestPty) Equals(other Payload) bool {
 }
 
 type PayloadChannelRequestX11 struct {
-	RequestID        uint64 `json:"requestId" yaml:"requestId"`
+	RequestID uint64 `json:"requestId" yaml:"requestId"`
 
 	SingleConnection bool   `json:"singleConnection" yaml:"singleConnection"`
 	AuthProtocol     string `json:"authProtocol" yaml:"authProtocol"`
