@@ -100,6 +100,51 @@ const EAuthGitHubUsernameDoesNotMatch = "GITHUB_USERNAME_DOES_NOT_MATCH"
 // EAuthKerberosVerificationFailed indicates that there was an error verifying the kerberos ticket sent by the client
 const EAuthKerberosVerificationFailed = "KRB_VERIFY_ERROR"
 
+// EAuthOIDCDiscoveryFailed indicates that the request to fetch the OIDC endpoints failed and will be retried. Check
+// the connection to your OIDC server.
+const EAuthOIDCDiscoveryFailed = "OIDC_DISCOVERY_FAILED"
+
+// EAuthOIDCDiscoveryTimeout indicates that there was a timeout while trying to obtain the OIDC endpoints. Check the
+// connection to your OIDC server.
+const EAuthOIDCDiscoveryTimeout = "OIDC_DISCOVERY_TIMEOUT"
+
+// EAuthOIDCDeauthorizeFailed indicates that the request for revoking an access token failed.
+const EAuthOIDCDeauthorizeFailed = "OIDC_DEAUTHORIZE_FAILED"
+
+// EAuthOIDCUserInfoFetchFailed indicates that a request for fetching the user information with a token failed. Check
+// the connection to your OIDC server and the OIDC server logs for details.
+const EAuthOIDCUserInfoFetchFailed = "OIDC_USER_INFO_FETCH_FAILED"
+
+// EAuthOIDCNoUsername indicates that the OIDC server did not return the configured field to be used for username.
+// Check your ContainerSSH configuration against your OIDC server implementation.
+const EAuthOIDCNoUsername = "OIDC_NO_USERNAME"
+
+// EAuthOIDCTimeout indicates that the OIDC authentication process resulted in a timeout.
+const EAuthOIDCTimeout = "OIDC_TIMEOUT"
+
+// EAuthOIDCDeauthorizeTimeout indicates that the process to revoke the access token has timed out and the access
+// token was not revoked.
+const EAuthOIDCDeauthorizeTimeout = "OIDC_DEAUTHORIZE_TIMEOUT"
+
+// EAuthOIDCAccessTokenFetchFailed indicates that ContainerSSH failed to fetch the access token from the authorization
+// code or device code. This is usually the result of a user entering the incorrect code.
+const EAuthOIDCAccessTokenFetchFailed = "OIDC_ACCESS_TOKEN_FETCH_FAILED"
+
+// EAuthOIDCHTTPClientCreateFailed indicates that ContainerSSH failed to create an HTTP client for OIDC. This is most
+// likely due to a misconfiguration.
+const EAuthOIDCHTTPClientCreateFailed = "OIDC_HTTP_CLIENT_CREATE_FAILED"
+
+// EAuthGenericTimeout indicates that the generic oAuth authentication process resulted in a timeout.
+const EAuthGenericTimeout = "GENERIC_TIMEOUT"
+
+// EAuthGenericAccessTokenFetchFailed indicates that ContainerSSH failed to fetch the access token from the
+// authorization code. This is usually the result of a user entering the incorrect code.
+const EAuthGenericAccessTokenFetchFailed = "GENERIC_ACCESS_TOKEN_FETCH_FAILED"
+
+// EAuthGenericHTTPClientCreateFailed indicates that ContainerSSH failed to create an HTTP client for the generic
+// oAuth2 authentication. This is most likely due to a misconfiguration.
+const EAuthGenericHTTPClientCreateFailed = "GENERIC_HTTP_CLIENT_CREATE_FAILED"
+
 // EAuthKerberosUsernameDoesNotMatch indicates that the user tried to a user other than their own and enforceUsername was set to on
 const EAuthKerberosUsernameDoesNotMatch = "KRB_USERNAME_DOES_NOT_MATCH"
 
