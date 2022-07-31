@@ -282,10 +282,7 @@ func (c CipherSuite) getCipher() uint16 {
 	panic(fmt.Errorf("unsupported cipher suite: %s", c))
 }
 
-// HTTPClientConfiguration is the configuration structure for HTTP clients
-//
-//We are adding the JSON and YAML tags to conform to the Operator SDK requirements to tag all fields.
-//goland:noinspection GoVetStructTag
+// HTTPClientConfiguration is the configuration structure for HTTP clients.
 type HTTPClientConfiguration struct {
 	// URL is the base URL for requests.
 	URL string `json:"url" yaml:"url" comment:"Base URL of the server to connect."`
