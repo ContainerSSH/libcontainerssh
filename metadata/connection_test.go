@@ -5,7 +5,7 @@ import (
 	"net"
 	"testing"
 
-    "go.containerssh.io/libcontainerssh/metadata"
+	"go.containerssh.io/libcontainerssh/metadata"
 )
 
 func TestMarshalRemoteAddress(t *testing.T) {
@@ -51,14 +51,16 @@ func TestMarshalConnectionMetadata(t *testing.T) {
 			Port: 2222,
 		},
 		ConnectionID: "asdf",
-		Metadata: map[string]metadata.Value{
-			"test": {
-				Value:     "testing",
-				Sensitive: true,
+		DynamicMetadata: metadata.DynamicMetadata{
+			Metadata: map[string]metadata.Value{
+				"test": {
+					Value:     "testing",
+					Sensitive: true,
+				},
 			},
+			Environment: nil,
+			Files:       nil,
 		},
-		Environment: nil,
-		Files:       nil,
 	}
 
 	data, err := json.Marshal(meta)

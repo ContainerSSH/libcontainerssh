@@ -3,10 +3,10 @@ package security
 import (
 	"context"
 
-    config2 "go.containerssh.io/libcontainerssh/config"
-    "go.containerssh.io/libcontainerssh/internal/sshserver"
-    "go.containerssh.io/libcontainerssh/log"
-    "go.containerssh.io/libcontainerssh/message"
+	config2 "go.containerssh.io/libcontainerssh/config"
+	"go.containerssh.io/libcontainerssh/internal/sshserver"
+	"go.containerssh.io/libcontainerssh/log"
+	"go.containerssh.io/libcontainerssh/message"
 )
 
 type sessionHandler struct {

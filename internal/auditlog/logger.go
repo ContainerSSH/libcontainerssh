@@ -5,7 +5,7 @@ import (
 	"io"
 	"net"
 
-    "go.containerssh.io/libcontainerssh/auditlog/message"
+	"go.containerssh.io/libcontainerssh/auditlog/message"
 )
 
 // Logger is a top level audit logger.
@@ -79,7 +79,7 @@ type Connection interface {
 	//                     channel-specific audit logger.
 	OnNewChannelSuccess(channelID message.ChannelID, channelType string) Channel
 
-	// OnRequestTCPReverseForward creates an audit log message for requesting the server to listen 
+	// OnRequestTCPReverseForward creates an audit log message for requesting the server to listen
 	// on a host and port for incoming connections.
 	OnRequestTCPReverseForward(bindHost string, bindPort uint32)
 

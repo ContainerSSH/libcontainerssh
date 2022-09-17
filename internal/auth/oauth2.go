@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-    "go.containerssh.io/libcontainerssh/metadata"
+	"go.containerssh.io/libcontainerssh/metadata"
 )
 
 // OAuth2Client is the client supporting OAuth2-based authentication. It only supports keyboard-interactive

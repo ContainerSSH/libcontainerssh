@@ -10,14 +10,14 @@ import (
 	"sync"
 	"time"
 
-    protocol "go.containerssh.io/libcontainerssh/agentprotocol"
-    "go.containerssh.io/libcontainerssh/auth"
-    "go.containerssh.io/libcontainerssh/config"
-    ssh2 "go.containerssh.io/libcontainerssh/internal/ssh"
-    "go.containerssh.io/libcontainerssh/log"
-    messageCodes "go.containerssh.io/libcontainerssh/message"
-    "go.containerssh.io/libcontainerssh/metadata"
-    "go.containerssh.io/libcontainerssh/service"
+	protocol "go.containerssh.io/libcontainerssh/agentprotocol"
+	"go.containerssh.io/libcontainerssh/auth"
+	"go.containerssh.io/libcontainerssh/config"
+	ssh2 "go.containerssh.io/libcontainerssh/internal/ssh"
+	"go.containerssh.io/libcontainerssh/log"
+	messageCodes "go.containerssh.io/libcontainerssh/message"
+	"go.containerssh.io/libcontainerssh/metadata"
+	"go.containerssh.io/libcontainerssh/service"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -541,9 +541,11 @@ func (s *serverImpl) handleConnection(conn net.Conn) {
 	connectionMeta := metadata.ConnectionMetadata{
 		RemoteAddress: metadata.RemoteAddress(*addr),
 		ConnectionID:  connectionID,
-		Metadata:      map[string]metadata.Value{},
-		Environment:   map[string]metadata.Value{},
-		Files:         map[string]metadata.BinaryValue{},
+		DynamicMetadata: metadata.DynamicMetadata{
+			Metadata:    map[string]metadata.Value{},
+			Environment: map[string]metadata.Value{},
+			Files:       map[string]metadata.BinaryValue{},
+		},
 	}
 
 	handlerNetworkConnection, connectionMeta, err := s.handler.OnNetworkConnection(connectionMeta)

@@ -3,8 +3,8 @@
 package auth
 
 import (
-    "go.containerssh.io/libcontainerssh/auth"
-    "go.containerssh.io/libcontainerssh/metadata"
+	"go.containerssh.io/libcontainerssh/auth"
+	"go.containerssh.io/libcontainerssh/metadata"
 )
 
 // AuthenticationType is the root type for all authentication and authorization methods. This type is extended for each

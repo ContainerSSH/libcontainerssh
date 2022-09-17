@@ -7,15 +7,15 @@ import (
 	"os"
 	"testing"
 
-    configuration "go.containerssh.io/libcontainerssh/config"
-    "go.containerssh.io/libcontainerssh/internal/auth"
-    "go.containerssh.io/libcontainerssh/internal/geoip/dummy"
-    "go.containerssh.io/libcontainerssh/internal/metrics"
-    "go.containerssh.io/libcontainerssh/internal/structutils"
-    "go.containerssh.io/libcontainerssh/internal/test"
-    "go.containerssh.io/libcontainerssh/log"
-    "go.containerssh.io/libcontainerssh/metadata"
 	"github.com/stretchr/testify/assert"
+	configuration "go.containerssh.io/libcontainerssh/config"
+	"go.containerssh.io/libcontainerssh/internal/auth"
+	"go.containerssh.io/libcontainerssh/internal/geoip/dummy"
+	"go.containerssh.io/libcontainerssh/internal/metrics"
+	"go.containerssh.io/libcontainerssh/internal/structutils"
+	"go.containerssh.io/libcontainerssh/internal/test"
+	"go.containerssh.io/libcontainerssh/log"
+	"go.containerssh.io/libcontainerssh/metadata"
 
 	"golang.org/x/crypto/ssh"
 
@@ -92,9 +92,11 @@ func TestKerberosPasswordAuth(t *testing.T) {
 					},
 				),
 				ConnectionID: "asdf",
-				Metadata:     map[string]metadata.Value{},
-				Environment:  map[string]metadata.Value{},
-				Files:        map[string]metadata.BinaryValue{},
+				DynamicMetadata: metadata.DynamicMetadata{
+					Metadata:    map[string]metadata.Value{},
+					Environment: map[string]metadata.Value{},
+					Files:       map[string]metadata.BinaryValue{},
+				},
 			},
 			Username: "foo",
 		},
@@ -114,9 +116,11 @@ func TestKerberosPasswordAuth(t *testing.T) {
 					},
 				),
 				ConnectionID: "asdf",
-				Metadata:     map[string]metadata.Value{},
-				Environment:  map[string]metadata.Value{},
-				Files:        map[string]metadata.BinaryValue{},
+				DynamicMetadata: metadata.DynamicMetadata{
+					Metadata:    map[string]metadata.Value{},
+					Environment: map[string]metadata.Value{},
+					Files:       map[string]metadata.BinaryValue{},
+				},
 			},
 			Username: "foo",
 		},
@@ -144,9 +148,11 @@ func TestKerberosNoPassword(t *testing.T) {
 					},
 				),
 				ConnectionID: "asdf",
-				Metadata:     map[string]metadata.Value{},
-				Environment:  map[string]metadata.Value{},
-				Files:        map[string]metadata.BinaryValue{},
+				DynamicMetadata: metadata.DynamicMetadata{
+					Metadata:     map[string]metadata.Value{},
+					Environment:  map[string]metadata.Value{},
+					Files:        map[string]metadata.BinaryValue{},
+				},
 			},
 			Username: "foo",
 		},
@@ -166,9 +172,11 @@ func TestKerberosNoPassword(t *testing.T) {
 					},
 				),
 				ConnectionID: "asdf",
-				Metadata:     map[string]metadata.Value{},
-				Environment:  map[string]metadata.Value{},
-				Files:        map[string]metadata.BinaryValue{},
+				DynamicMetadata: metadata.DynamicMetadata{
+					Metadata:    map[string]metadata.Value{},
+					Environment: map[string]metadata.Value{},
+					Files:       map[string]metadata.BinaryValue{},
+				},
 			},
 			Username: "foo",
 		},
@@ -205,9 +213,11 @@ func TestKerberosGSSAPIAuth(t *testing.T) {
 					},
 				),
 				ConnectionID: "asdf",
-				Metadata:     map[string]metadata.Value{},
-				Environment:  map[string]metadata.Value{},
-				Files:        map[string]metadata.BinaryValue{},
+				DynamicMetadata: metadata.DynamicMetadata{
+					Metadata:    map[string]metadata.Value{},
+					Environment: map[string]metadata.Value{},
+					Files:       map[string]metadata.BinaryValue{},
+				},
 			},
 		),
 		gssClient,
@@ -233,9 +243,11 @@ func TestKerberosGSSAPIAuth(t *testing.T) {
 					},
 				),
 				ConnectionID: "asdf",
-				Metadata:     map[string]metadata.Value{},
-				Environment:  map[string]metadata.Value{},
-				Files:        map[string]metadata.BinaryValue{},
+				DynamicMetadata: metadata.DynamicMetadata{
+					Metadata:    map[string]metadata.Value{},
+					Environment: map[string]metadata.Value{},
+					Files:       map[string]metadata.BinaryValue{},
+				},
 			},
 		),
 		gssClient,
@@ -261,9 +273,11 @@ func TestKerberosGSSAPIAuth(t *testing.T) {
 					},
 				),
 				ConnectionID: "asdf",
-				Metadata:     map[string]metadata.Value{},
-				Environment:  map[string]metadata.Value{},
-				Files:        map[string]metadata.BinaryValue{},
+				DynamicMetadata: metadata.DynamicMetadata{
+					Metadata:    map[string]metadata.Value{},
+					Environment: map[string]metadata.Value{},
+					Files:       map[string]metadata.BinaryValue{},
+				},
 			},
 		),
 		gssClient,

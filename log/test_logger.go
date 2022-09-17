@@ -3,7 +3,7 @@ package log
 import (
 	"testing"
 
-    "go.containerssh.io/libcontainerssh/config"
+	"go.containerssh.io/libcontainerssh/config"
 )
 
 // NewTestLogger creates a logger for testing purposes.

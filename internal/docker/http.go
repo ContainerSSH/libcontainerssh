@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-    "go.containerssh.io/libcontainerssh/config"
+	"go.containerssh.io/libcontainerssh/config"
 )
 
 func getHTTPClient(config config.DockerConfig) (*http.Client, error) {

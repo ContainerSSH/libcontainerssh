@@ -5,9 +5,9 @@ import (
 	"io"
 	"testing"
 
-    proto "go.containerssh.io/libcontainerssh/agentprotocol"
+	proto "go.containerssh.io/libcontainerssh/agentprotocol"
 
-    log "go.containerssh.io/libcontainerssh/log"
+	log "go.containerssh.io/libcontainerssh/log"
 )
 
 // region Tests

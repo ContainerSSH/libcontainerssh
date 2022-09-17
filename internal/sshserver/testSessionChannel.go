@@ -8,7 +8,7 @@ import (
 	"io"
 	"strings"
 
-    "go.containerssh.io/libcontainerssh/internal/unixutils"
+	"go.containerssh.io/libcontainerssh/internal/unixutils"
 )
 
 type testSessionChannel struct {

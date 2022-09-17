@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-    "go.containerssh.io/libcontainerssh/service"
+	"go.containerssh.io/libcontainerssh/service"
 )
 
 func TestLifecycle(t *testing.T) {

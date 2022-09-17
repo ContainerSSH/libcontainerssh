@@ -10,14 +10,14 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/stretchr/testify/assert"
 
-    configuration "go.containerssh.io/libcontainerssh/config"
-    "go.containerssh.io/libcontainerssh/internal/config"
-    "go.containerssh.io/libcontainerssh/internal/geoip"
-    "go.containerssh.io/libcontainerssh/internal/metrics"
-    "go.containerssh.io/libcontainerssh/internal/test"
-    "go.containerssh.io/libcontainerssh/log"
-    "go.containerssh.io/libcontainerssh/metadata"
-    service2 "go.containerssh.io/libcontainerssh/service"
+	configuration "go.containerssh.io/libcontainerssh/config"
+	"go.containerssh.io/libcontainerssh/internal/config"
+	"go.containerssh.io/libcontainerssh/internal/geoip"
+	"go.containerssh.io/libcontainerssh/internal/metrics"
+	"go.containerssh.io/libcontainerssh/internal/test"
+	"go.containerssh.io/libcontainerssh/log"
+	"go.containerssh.io/libcontainerssh/metadata"
+	service2 "go.containerssh.io/libcontainerssh/service"
 )
 
 func TestHTTP(t *testing.T) {
@@ -68,9 +68,11 @@ func TestHTTP(t *testing.T) {
 						},
 					),
 					ConnectionID: connectionID,
-					Metadata:     map[string]metadata.Value{},
-					Environment:  map[string]metadata.Value{},
-					Files:        map[string]metadata.BinaryValue{},
+					DynamicMetadata: metadata.DynamicMetadata{
+						Metadata:    map[string]metadata.Value{},
+						Environment: map[string]metadata.Value{},
+						Files:       map[string]metadata.BinaryValue{},
+					},
 				},
 				ClientVersion: "",
 				Username:      "foo",
@@ -79,7 +81,7 @@ func TestHTTP(t *testing.T) {
 		},
 	)
 	assert.NoError(t, err)
-	assert.Equal(t, "yourcompany/yourimage", cfg.Docker.Execution.Launch.ContainerConfig.Image)
+	assert.Equal(t, "yourcompany/yourimage", cfg.Docker.Execution.DockerLaunchConfig.ContainerConfig.Image)
 
 	lifecycle.Stop(context.Background())
 	err = lifecycle.Wait()
@@ -101,9 +103,9 @@ func (m *myConfigReqHandler) OnConfig(
 	request configuration.Request,
 ) (config configuration.AppConfig, err error) {
 	config.Backend = "docker"
-	config.Docker.Execution.Launch.ContainerConfig = &container.Config{}
+	config.Docker.Execution.DockerLaunchConfig.ContainerConfig = &container.Config{}
 	if request.Username == "foo" {
-		config.Docker.Execution.Launch.ContainerConfig.Image = "yourcompany/yourimage"
+		config.Docker.Execution.DockerLaunchConfig.ContainerConfig.Image = "yourcompany/yourimage"
 	}
 	return config, err
 }

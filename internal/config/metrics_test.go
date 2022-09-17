@@ -3,9 +3,9 @@ package config_test
 import (
 	"testing"
 
-    "go.containerssh.io/libcontainerssh/config"
-    "go.containerssh.io/libcontainerssh/internal/structutils"
 	"github.com/stretchr/testify/assert"
+	"go.containerssh.io/libcontainerssh/config"
+	"go.containerssh.io/libcontainerssh/internal/structutils"
 )
 
 func TestListenDefault(t *testing.T) {

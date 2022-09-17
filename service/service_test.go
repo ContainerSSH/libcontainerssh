@@ -3,7 +3,7 @@ package service_test
 import (
 	"errors"
 
-    "go.containerssh.io/libcontainerssh/service"
+	"go.containerssh.io/libcontainerssh/service"
 )
 
 type testService struct {

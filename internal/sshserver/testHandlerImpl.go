@@ -4,7 +4,7 @@ import (
 	"context"
 	"net"
 
-    "go.containerssh.io/libcontainerssh/metadata"
+	"go.containerssh.io/libcontainerssh/metadata"
 )
 
 // testHandlerImpl is a conformanceTestHandler implementation that fakes a "real" backend.

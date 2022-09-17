@@ -13,6 +13,8 @@ import (
 )
 
 // DockerConfig is the base configuration structure of the Docker backend.
+//
+// swagger:model DockerConfig
 type DockerConfig struct {
 	// Connection configures how to connect to dockerd
 	Connection DockerConnectionConfig `json:"connection" yaml:"connection"`
@@ -68,6 +70,8 @@ func parseRawDuration(rawValue interface{}, d *time.Duration) error {
 // DockerExecutionMode determines when a container is launched.
 // DockerExecutionModeConnection launches one container per SSH connection (default), while DockerExecutionModeSession launches
 // one container per SSH session.
+//
+// swagger:enum DockerExecutionMode
 type DockerExecutionMode string
 
 const (
@@ -90,39 +94,116 @@ func (e DockerExecutionMode) Validate() error {
 }
 
 // DockerExecutionConfig contains the configuration of what container to run in Docker.
-//goland:noinspection GoVetStructTag
+//
+// swagger:model DockerExecutionConfig
 type DockerExecutionConfig struct {
-	// Launch contains the Docker-specific launch configuration.
-	Launch DockerLaunchConfig `json:",inline" yaml:",inline"`
+	// DockerLaunchConfig contains the Docker-specific launch configuration.
+	DockerLaunchConfig `json:",inline,omitempty" yaml:",inline,omitempty"`
+
 	// Mode influences how commands are executed.
 	//
-	// - If DockerExecutionModeConnection is chosen (default) a new container is launched per connection. In this mode
+	// - If "connection" is chosen (default) a new container is launched per connection. In this mode
 	//   sessions are executed using the "docker exec" functionality and the main container console runs a script that
 	//   waits for a termination signal.
-	// - If DockerExecutionModeSession is chosen a new container is launched per session, leading to potentially multiple
+	// - If "session" is chosen a new container is launched per session, leading to potentially multiple
 	//   containers per connection. In this mode the program is launched directly as the main process of the container.
 	//   When configuring this mode you should explicitly configure the "cmd" option to an empty list if you want the
 	//   default command in the container to launch.
-	Mode DockerExecutionMode `json:"mode" yaml:"mode" default:"connection"`
+	//
+	// default: connection
+	Mode DockerExecutionMode `json:"mode,omitempty" yaml:"mode,omitempty" default:"connection"`
 
 	// IdleCommand is the command that runs as the first process in the container in DockerExecutionModeConnection. Ignored in DockerExecutionModeSession.
-	IdleCommand []string `json:"idleCommand" yaml:"idleCommand" comment:"Run this command to wait for container exit" default:"[\"/usr/bin/containerssh-agent\", \"wait-signal\", \"--signal\", \"INT\", \"--signal\", \"TERM\"]"`
+	//
+	// default: ["/usr/bin/containerssh-agent", "wait-signal", "--signal", "INT", "--signal", "TERM"]
+	IdleCommand []string `json:"idleCommand,omitempty" yaml:"idleCommand,omitempty" comment:"Run this command to wait for container exit" default:"[\"/usr/bin/containerssh-agent\", \"wait-signal\", \"--signal\", \"INT\", \"--signal\", \"TERM\"]"`
 	// ShellCommand is the command used for launching shells when the container is in DockerExecutionModeConnection. Ignored in DockerExecutionModeSession.
-	ShellCommand []string `json:"shellCommand" yaml:"shellCommand" comment:"Run this command as a default shell." default:"[\"/bin/bash\"]"`
+	//
+	// default: ["/bin/bash"]
+	ShellCommand []string `json:"shellCommand,omitempty" yaml:"shellCommand,omitempty" comment:"Run this command as a default shell." default:"[\"/bin/bash\"]"`
 	// AgentPath contains the path to the ContainerSSH Guest Agent.
-	AgentPath string `json:"agentPath" yaml:"agentPath" default:"/usr/bin/containerssh-agent"`
+	//
+	// default: /usr/bin/containerssh-agent
+	AgentPath string `json:"agentPath,omitempty" yaml:"agentPath,omitempty" default:"/usr/bin/containerssh-agent"`
 	// DisableAgent enables using the ContainerSSH Guest Agent.
-	DisableAgent bool `json:"disableAgent" yaml:"disableAgent"`
+	//
+	// default: false
+	DisableAgent bool `json:"disableAgent,omitempty" yaml:"disableAgent,omitempty"`
 	// Subsystems contains a map of subsystem names and their corresponding binaries in the container.
-	Subsystems map[string]string `json:"subsystems" yaml:"subsystems" comment:"Subsystem names and binaries map." default:"{\"sftp\":\"/usr/lib/openssh/sftp-server\"}"`
+	//
+	// default: {"sftp":"/usr/lib/openssh/sftp-server"}
+	Subsystems map[string]string `json:"subsystems,omitempty" yaml:"subsystems,omitempty" comment:"Subsystem names and binaries map." default:"{\"sftp\":\"/usr/lib/openssh/sftp-server\"}"`
 
 	// ImagePullPolicy controls when to pull container images.
-	ImagePullPolicy DockerImagePullPolicy `json:"imagePullPolicy" yaml:"imagePullPolicy" comment:"Image pull policy" default:"IfNotPresent"`
+	//
+	// default: IfNotPresent
+	ImagePullPolicy DockerImagePullPolicy `json:"imagePullPolicy,omitempty" yaml:"imagePullPolicy,omitempty" comment:"Image pull policy" default:"IfNotPresent"`
 
 	// ExposeAuthMetadataAsEnv lets you expose the authentication metadata (e.g. GITHUB_TOKEN) as an environment variable
 	// in the container. In contrast to the environment variables set in the SSH connection these environment variables
 	// are available to all processes in the container, including the idle command.
-	ExposeAuthMetadataAsEnv bool `json:"exposeAuthMetadataAsEnv" yaml:"exposeAuthMetadataAsEnv"`
+	//
+	// default: false
+	ExposeAuthMetadataAsEnv bool `json:"exposeAuthMetadataAsEnv,omitempty" yaml:"exposeAuthMetadataAsEnv,omitempty"`
+}
+
+type tmpDockerExecutionConfig struct {
+	Container interface{} `json:"container" yaml:"container"`
+	Host interface{} `json:"host" yaml:"host"`
+	Network interface{} `json:"network" yaml:"network"`
+	Platform interface{} `json:"platform" yaml:"platform"`
+	ContainerName interface{} `json:"containername" yaml:"containername"`
+	Mode DockerExecutionMode `json:"mode,omitempty" yaml:"mode,omitempty" default:"connection"`
+	IdleCommand []string `json:"idleCommand,omitempty" yaml:"idleCommand,omitempty" comment:"Run this command to wait for container exit" default:"[\"/usr/bin/containerssh-agent\", \"wait-signal\", \"--signal\", \"INT\", \"--signal\", \"TERM\"]"`
+	ShellCommand []string `json:"shellCommand,omitempty" yaml:"shellCommand,omitempty" comment:"Run this command as a default shell." default:"[\"/bin/bash\"]"`
+	AgentPath string `json:"agentPath,omitempty" yaml:"agentPath,omitempty" default:"/usr/bin/containerssh-agent"`
+	DisableAgent bool `json:"disableAgent,omitempty" yaml:"disableAgent,omitempty"`
+	Subsystems map[string]string `json:"subsystems,omitempty" yaml:"subsystems,omitempty" comment:"Subsystem names and binaries map." default:"{\"sftp\":\"/usr/lib/openssh/sftp-server\"}"`
+	ImagePullPolicy DockerImagePullPolicy `json:"imagePullPolicy,omitempty" yaml:"imagePullPolicy,omitempty" comment:"Image pull policy" default:"IfNotPresent"`
+	ExposeAuthMetadataAsEnv bool `json:"exposeAuthMetadataAsEnv,omitempty" yaml:"exposeAuthMetadataAsEnv,omitempty"`
+}
+
+
+// UnmarshalJSON takes a JSON byte array and unmarshalls it into a structure.
+func (c *DockerExecutionConfig) UnmarshalJSON(b []byte) error {
+	decoder := json.NewDecoder(bytes.NewReader(b))
+	tmp := &tmpDockerExecutionConfig{}
+	if err := decoder.Decode(tmp); err != nil {
+		return err
+	}
+	launch := DockerLaunchConfig{}
+	decoder = json.NewDecoder(bytes.NewReader(b))
+	if err := decoder.Decode(&launch); err != nil {
+		return err
+	}
+	c.fill(launch, tmp)
+	return nil
+}
+
+// UnmarshalYAML takes a YAML byte array and unmarshalls it into a structure.
+func (c *DockerExecutionConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	tmp := &tmpDockerExecutionConfig{}
+	if err := unmarshal(tmp); err != nil {
+		return err
+	}
+	launch := DockerLaunchConfig{}
+	if err := unmarshal(&launch); err != nil {
+		return err
+	}
+	c.fill(launch, tmp)
+	return nil
+}
+
+func (c *DockerExecutionConfig) fill(launch DockerLaunchConfig, tmp *tmpDockerExecutionConfig) {
+	c.DockerLaunchConfig = launch
+	c.Mode = tmp.Mode
+	c.IdleCommand = tmp.IdleCommand
+	c.ShellCommand = tmp.ShellCommand
+	c.AgentPath = tmp.AgentPath
+	c.DisableAgent = tmp.DisableAgent
+	c.Subsystems = tmp.Subsystems
+	c.ImagePullPolicy = tmp.ImagePullPolicy
+	c.ExposeAuthMetadataAsEnv = tmp.ExposeAuthMetadataAsEnv
 }
 
 // Validate validates the docker config structure.
@@ -135,12 +216,12 @@ func (c DockerExecutionConfig) Validate() error {
 	}
 	switch c.Mode {
 	case DockerExecutionModeSession:
-		if c.Launch.HostConfig != nil && !c.Launch.HostConfig.RestartPolicy.IsNone() {
+		if c.DockerLaunchConfig.HostConfig != nil && !c.DockerLaunchConfig.HostConfig.RestartPolicy.IsNone() {
 			return wrap(
 				newError(
 					"restartPolicy",
 					"unsupported restart policy for execution mode \"session\": %s (session containers may not restart)",
-					c.Launch.HostConfig.RestartPolicy.Name,
+					c.DockerLaunchConfig.HostConfig.RestartPolicy.Name,
 				),
 				"hostConfig",
 			)
@@ -149,7 +230,7 @@ func (c DockerExecutionConfig) Validate() error {
 	if err := c.ImagePullPolicy.Validate(); err != nil {
 		return wrap(err, "imagePullPolicy")
 	}
-	if err := c.Launch.Validate(); err != nil {
+	if err := c.DockerLaunchConfig.Validate(); err != nil {
 		return err
 	}
 	if err := c.Mode.Validate(); err != nil {
@@ -166,6 +247,8 @@ func (c DockerExecutionConfig) Validate() error {
 //	 the "latest" tag was specified.
 // - ImagePullPolicyNever means that the image will be never pulled, and if the image is not available locally the
 //	 connection will fail.
+//
+// swagger:enum DockerImagePullPolicy
 type DockerImagePullPolicy string
 
 const (
@@ -194,18 +277,50 @@ func (p DockerImagePullPolicy) Validate() error {
 }
 
 // DockerTimeoutConfig drives the various timeouts in the Docker backend.
+//
+// swagger:model DockerTimeoutConfig
 type DockerTimeoutConfig struct {
-	// ContainerStart is the maximum time starting a container may take.
+	// ContainerStart is the maximum time starting a container may take. It may be configured as an integer in
+	// nanoseconds or as a time formatting string.
+	//
+	// required: false
+	// example: 60s
+	// swagger:type string
 	ContainerStart time.Duration `json:"containerStart" yaml:"containerStart" default:"60s"`
-	// ContainerStop is the maximum time to wait for a container to stop. This should always be set higher than the Docker StopTimeout.
+	// ContainerStop is the maximum time to wait for a container to stop.
+	// This should always be set higher than the Docker StopTimeout. It may be configured as an integer in
+	// nanoseconds or as a time formatting string.
+	//
+	// required: true
+	// example: 60s
+	// swagger:type string
 	ContainerStop time.Duration `json:"containerStop" yaml:"containerStop" default:"60s"`
-	// CommandStart sets the maximum time starting a command may take.
+	// CommandStart sets the maximum time starting a command may take. It may be configured as an integer in
+	// nanoseconds or as a time formatting string.
+	//
+	// required: true
+	// example: 60s
+	// swagger:type string
 	CommandStart time.Duration `json:"commandStart" yaml:"commandStart" default:"60s"`
-	// Signal sets the maximum time sending a signal may take.
+	// Signal sets the maximum time sending a signal may take. It may be configured as an integer in
+	// nanoseconds or as a time formatting string.
+	//
+	// required: true
+	// example: 60s
+	// swagger:type string
 	Signal time.Duration `json:"signal" yaml:"signal" default:"60s"`
-	// Signal sets the maximum time setting the window size may take.
+	// Signal sets the maximum time setting the window size may take. It may be configured as an integer in
+	// nanoseconds or as a time formatting string.
+	//
+	// required: true
+	// example: 60s
+	// swagger:type string
 	Window time.Duration `json:"window" yaml:"window" default:"60s"`
-	// HTTP
+	// HTTP is the timeout for the HTTP calls themselves.
+	//
+	// required: true
+	// example: 60s
+	// swagger:type string
 	HTTP time.Duration `json:"http" yaml:"http" default:"15s"`
 }
 
@@ -270,6 +385,8 @@ func (t *DockerTimeoutConfig) unmarshalTmp(tmp *dockerTmpTimeoutConfig) error {
 // DockerLaunchConfig contains the container configuration for the Docker client version 20.
 type DockerLaunchConfig struct {
 	// ContainerConfig contains container-specific configuration options.
+	//
+	// default: {"image":"containerssh/containerssh-guest-image"}
 	ContainerConfig *container.Config `json:"container" yaml:"container" comment:"DockerConfig configuration." default:"{\"image\":\"containerssh/containerssh-guest-image\"}"`
 	// HostConfig contains the host-specific configuration options.
 	HostConfig *container.HostConfig `json:"host" yaml:"host" comment:"Host configuration"`

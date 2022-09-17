@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"io"
 
-    "go.containerssh.io/libcontainerssh/auditlog/message"
-    "go.containerssh.io/libcontainerssh/internal/auditlog/codec"
 	"github.com/fxamacker/cbor"
 	"github.com/mitchellh/mapstructure"
+	"go.containerssh.io/libcontainerssh/auditlog/message"
+	"go.containerssh.io/libcontainerssh/internal/auditlog/codec"
 )
 
 // NewDecoder Creates a decoder for the CBOR+GZIP audit log format.

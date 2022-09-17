@@ -11,7 +11,9 @@ import (
 	k8sYaml "sigs.k8s.io/yaml"
 )
 
-// KubernetesConfig is the base configuration structure for Kubernetes
+// KubernetesConfig is the base configuration structure for Kubernetes.
+//
+// swagger:model KubernetesConfig
 type KubernetesConfig struct {
 	// Connection configures the connection to the Kubernetes cluster.
 	Connection KubernetesConnectionConfig `json:"connection,omitempty" yaml:"connection" comment:"Kubernetes configuration options"`
@@ -35,12 +37,25 @@ func (c KubernetesConfig) Validate() error {
 	return nil
 }
 
-// KubernetesConnectionConfig configures the connection to the Kubernetes cluster.
-//goland:noinspection GoVetStructTag
+// KubernetesConnectionConfig configures the connection to the Kubernetes cluster. There are multiple ways to
+// configure the connection.
+//
+// - End users are typically issued certificates and will need to provide the "host", "certFile", "keyFile", and
+//   "caFile" fields. Alternatively, the certificates and keys can be directly provided.
+// - Automated, outside the cluster users will typically use a service account and use the "host", "caFile", and
+//   "bearerTokenFile" fields. Alternatively, these can also be directly specified.
+// - In-cluster users will typically use a service account mounted in the ContainerSSH container and specify the
+//   "caFile" and "bearerTokenFile" fields.
+//
+// swagger:model KubernetesConnectionConfig
 type KubernetesConnectionConfig struct {
 	// Host is a host string, a host:port pair, or a URL to the Kubernetes apiserver. Defaults to kubernetes.default.svc.
+	//
+	// default: kubernetes.default.svc
 	Host string `json:"host,omitempty" yaml:"host" comment:"a host string, a host:port pair, or a URL to the base of the apiserver." default:"kubernetes.default.svc"`
 	// APIPath is a sub-path that points to the API root. Defaults to /api
+	//
+	// default: /api
 	APIPath string `json:"path,omitempty" yaml:"path" comment:"APIPath is a sub-path that points to an API root." default:"/api"`
 
 	// Username is the username for basic authentication.
@@ -49,31 +64,51 @@ type KubernetesConnectionConfig struct {
 	Password string `json:"password,omitempty" yaml:"password" comment:"Password for basic authentication"`
 
 	// ServerName sets the server name to be set in the SNI and used by the client for TLS verification.
+	//
+	// default: same as host
 	ServerName string `json:"serverName,omitempty" yaml:"serverName" comment:"ServerName is passed to the server for SNI and is used in the client to check server certificates against."`
 
 	// CertFile points to a file that contains the client certificate used for authentication.
+	//
+	// example: /path/to/your/cert.crt
 	CertFile string `json:"certFile,omitempty" yaml:"certFile" comment:"File containing client certificate for TLS client certificate authentication."`
 	// KeyFile points to a file that contains the client key used for authentication.
+	//
+	// example: /path/to/your/key.pem
 	KeyFile string `json:"keyFile,omitempty" yaml:"keyFile" comment:"File containing client key for TLS client certificate authentication"`
 	// CAFile points to a file that contains the CA certificate for authentication.
+	//
+	// example: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
 	CAFile string `json:"cacertFile,omitempty" yaml:"cacertFile" comment:"File containing trusted root certificates for the server"`
 
 	// CertData contains a PEM-encoded certificate for TLS client certificate authentication.
+	//
+	// example: -----BEGIN CERTIFICATE----- ...
 	CertData string `json:"cert,omitempty" yaml:"cert" comment:"PEM-encoded certificate for TLS client certificate authentication"`
 	// KeyData contains a PEM-encoded client key for TLS client certificate authentication.
+	//
+	// example: -----BEGIN RSA PRIVATE KEY----- ...
 	KeyData string `json:"key,omitempty" yaml:"key" comment:"PEM-encoded client key for TLS client certificate authentication"`
 	// CAData contains a PEM-encoded trusted root certificates for the server.
+	//
+	// example: -----BEGIN CERTIFICATE----- ...
 	CAData string `json:"cacert,omitempty" yaml:"cacert" comment:"PEM-encoded trusted root certificates for the server"`
 
 	// BearerToken contains a bearer (service) token for authentication.
 	BearerToken string `json:"bearerToken,omitempty" yaml:"bearerToken" comment:"Bearer (service token) authentication"`
 	// BearerTokenFile points to a file containing a bearer (service) token for authentication.
 	// Set to /var/run/secrets/kubernetes.io/serviceaccount/token to use service token in a Kubernetes kubeConfigCluster.
+	//
+	// example: /var/run/secrets/kubernetes.io/serviceaccount/token
 	BearerTokenFile string `json:"bearerTokenFile,omitempty" yaml:"bearerTokenFile" comment:"Path to a file containing a BearerToken. Set to /var/run/secrets/kubernetes.io/serviceaccount/token to use service token in a Kubernetes kubeConfigCluster."`
 
-	// QPS indicates the maximum QPS to the master from this client. Defaults to 5.
+	// QPS indicates the maximum QPS to the master from this client.
+	//
+	// default: 5
 	QPS float32 `json:"qps,omitempty" yaml:"qps" comment:"QPS indicates the maximum QPS to the master from this client." default:"5"`
 	// Burst indicates the maximum burst for throttle.
+	//
+	// default: 10
 	Burst int `json:"burst,omitempty" yaml:"burst" comment:"Maximum burst for throttle." default:"10"`
 }
 
@@ -93,25 +128,40 @@ func (c KubernetesConnectionConfig) Validate() error {
 }
 
 // KubernetesPodConfig describes the pod to launch.
-//goland:noinspection GoVetStructTag
 type KubernetesPodConfig struct {
 	// Metadata configures the pod metadata.
+	//
+	// default: {"namespace":"default","generateName":"containerssh-"}
 	Metadata metav1.ObjectMeta `json:"metadata,omitempty" yaml:"metadata,omitempty" default:"{\"namespace\":\"default\",\"generateName\":\"containerssh-\"}"`
 	// Spec contains the pod specification to launch.
+	//
+	// default: {"containers":[{"name":"shell","image":"containerssh/containerssh-guest-image"}]}
 	Spec v1.PodSpec `json:"spec,omitempty" yaml:"spec" comment:"Pod specification to launch" default:"{\"containers\":[{\"name\":\"shell\",\"image\":\"containerssh/containerssh-guest-image\"}]}"`
 
 	// ConsoleContainerNumber specifies the container to attach the running process to. Defaults to 0.
+	//
+	// default: 0
 	ConsoleContainerNumber int `json:"consoleContainerNumber,omitempty" yaml:"consoleContainerNumber" comment:"Which container to attach the SSH connection to" default:"0"`
 
 	// IdleCommand contains the command to run as the first process in the container. Other commands are executed using the "exec" method.
+	//
+	// default: ["/usr/bin/containerssh-agent", "wait-signal", "--signal", "INT", "--signal", "TERM"]
 	IdleCommand []string `json:"idleCommand,omitempty" yaml:"idleCommand" comment:"Run this command to wait for container exit" default:"[\"/usr/bin/containerssh-agent\", \"wait-signal\", \"--signal\", \"INT\", \"--signal\", \"TERM\"]"`
 	// ShellCommand is the command used for launching shells when the container. Required in KubernetesExecutionModeConnection and when the agent is used.
+	//
+	// default: ["/bin/bash"]
 	ShellCommand []string `json:"shellCommand,omitempty" yaml:"shellCommand" comment:"Run this command as a default shell." default:"[\"/bin/bash\"]"`
 	// AgentPath contains the path to the ContainerSSH Guest Agent.
+	//
+	// default: /usr/bin/containerssh-agent
 	AgentPath string `json:"agentPath,omitempty" yaml:"agentPath" default:"/usr/bin/containerssh-agent"`
 	// DisableAgent disables using the ContainerSSH Guest Agent.
+	//
+	// default: false
 	DisableAgent bool `json:"disableAgent,omitempty" yaml:"disableAgent"`
 	// Subsystems contains a map of subsystem names and the executable to launch.
+	//
+	// default: {"sftp":"/usr/lib/openssh/sftp-server"}
 	Subsystems map[string]string `json:"subsystems,omitempty" yaml:"subsystems" comment:"Subsystem names and binaries map." default:"{\"sftp\":\"/usr/lib/openssh/sftp-server\"}"`
 
 	// Mode influences how commands are executed.

@@ -1,9 +1,9 @@
 package config
 
 import (
-    "go.containerssh.io/libcontainerssh/config"
-    "go.containerssh.io/libcontainerssh/http"
-    "go.containerssh.io/libcontainerssh/log"
+	"go.containerssh.io/libcontainerssh/config"
+	"go.containerssh.io/libcontainerssh/http"
+	"go.containerssh.io/libcontainerssh/log"
 )
 
 type handler struct {

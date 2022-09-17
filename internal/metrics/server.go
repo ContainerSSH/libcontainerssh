@@ -1,10 +1,10 @@
 package metrics
 
 import (
-    "go.containerssh.io/libcontainerssh/config"
-    http2 "go.containerssh.io/libcontainerssh/http"
-    "go.containerssh.io/libcontainerssh/log"
-    messageCodes "go.containerssh.io/libcontainerssh/message"
+	"go.containerssh.io/libcontainerssh/config"
+	http2 "go.containerssh.io/libcontainerssh/http"
+	"go.containerssh.io/libcontainerssh/log"
+	messageCodes "go.containerssh.io/libcontainerssh/message"
 )
 
 // NewServer creates a new metrics server based on the configuration. It MAY return nil if the server is disabled.

@@ -14,8 +14,7 @@ type Request struct {
 //
 // swagger:model ConfigResponseBody
 type ResponseBody struct {
-	// Metadata is the metadata received from the authentication server.
-	metadata.ConnectionAuthenticatedMetadata `json:",inline"`
+	metadata.DynamicMetadata `json:",inline"`
 
 	// Config is the configuration structure to be passed back from the config server.
 	//

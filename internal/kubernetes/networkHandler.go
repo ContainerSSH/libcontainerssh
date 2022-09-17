@@ -7,13 +7,13 @@ import (
 	"strings"
 	"sync"
 
-    "go.containerssh.io/libcontainerssh/auth"
-    publicConfig "go.containerssh.io/libcontainerssh/config"
-    "go.containerssh.io/libcontainerssh/internal/sshserver"
-    "go.containerssh.io/libcontainerssh/log"
-    "go.containerssh.io/libcontainerssh/message"
-    "go.containerssh.io/libcontainerssh/metadata"
-    "go.containerssh.io/libcontainerssh/internal/agentforward"
+	"go.containerssh.io/libcontainerssh/auth"
+	publicConfig "go.containerssh.io/libcontainerssh/config"
+	"go.containerssh.io/libcontainerssh/internal/agentforward"
+	"go.containerssh.io/libcontainerssh/internal/sshserver"
+	"go.containerssh.io/libcontainerssh/log"
+	"go.containerssh.io/libcontainerssh/message"
+	"go.containerssh.io/libcontainerssh/metadata"
 )
 
 type networkHandler struct {
