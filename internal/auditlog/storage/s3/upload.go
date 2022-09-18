@@ -200,6 +200,7 @@ func (q *uploadQueue) uploadLoop(s3Connection *s3.S3, name string, entry *queueE
 		q.workerSem <- 42
 		errorHappened = false
 
+		q.logger.Debug("Stat'ing read handle...")
 		stat, err := entry.readHandle.Stat()
 		if err != nil {
 			q.logger.Error(
@@ -213,6 +214,7 @@ func (q *uploadQueue) uploadLoop(s3Connection *s3.S3, name string, entry *queueE
 		}
 
 		if !errorHappened {
+			q.logger.Debug("Processing upload...")
 			var finished bool
 			errorHappened, finished, uploadedBytes, completedParts, uploadID = q.processUpload(
 				entry,
@@ -228,6 +230,8 @@ func (q *uploadQueue) uploadLoop(s3Connection *s3.S3, name string, entry *queueE
 				<-q.workerSem
 				break
 			}
+		} else {
+			q.logger.Debug("An error happened: %v")
 		}
 
 		<-q.workerSem
