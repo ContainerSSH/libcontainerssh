@@ -6,9 +6,9 @@ import (
 	"sync"
 	"time"
 
-    log "go.containerssh.io/libcontainerssh/log"
-    message "go.containerssh.io/libcontainerssh/message"
 	"github.com/fxamacker/cbor/v2"
+	"go.containerssh.io/libcontainerssh/log"
+	"go.containerssh.io/libcontainerssh/message"
 )
 
 const (
@@ -569,50 +569,19 @@ func (c *ForwardCtx) StartClient() (connectionType uint32, setupPacket SetupPack
 }
 
 func (c *ForwardCtx) StartServerForward() (chan *Connection, error) {
-	c.init()
-
-	setupPacket := SetupPacket{
-		ConnectionType: CONNECTION_TYPE_PORT_DIAL,
-	}
-	mar, err := cbor.Marshal(&setupPacket)
-	if err != nil {
-		c.logger.Error(message.Wrap(
-			err,
-			message.EAgentDecodingFailed,
-			"Error marshalling setup packet",
-		))
-		return nil, err
-	}
-
-	packet := Packet{
-		Type:    PACKET_SETUP,
-		Payload: mar,
-	}
-	err = c.writePacket(&packet)
-	if err != nil {
-		return nil, err
-	}
-
-	resp := Packet{}
-	err = c.decoder.Decode(&resp)
-	if err != nil {
-		return nil, err
-	}
-	if resp.Type == PACKET_ERROR {
-		return nil, fmt.Errorf("received error packet from client")
-	} else if resp.Type != PACKET_SUCCESS {
-		return nil, fmt.Errorf("received invalid packet from client")
-	}
-
-	go c.handleBackend()
-
-	return c.connectionChannel, nil
+	return c.startReverseForwardingClient(nil)
 }
 
-func (c *ForwardCtx) startReverseForwardingClient(setupPacket SetupPacket) (chan *Connection, error) {
+func (c *ForwardCtx) startReverseForwardingClient(setupPacket *SetupPacket) (chan *Connection, error) {
 	c.init()
 
-	mar, err := cbor.Marshal(&setupPacket)
+	if setupPacket == nil {
+		setupPacket = &SetupPacket{
+			ConnectionType: CONNECTION_TYPE_PORT_DIAL,
+		}
+	}
+
+	mar, err := cbor.Marshal(setupPacket)
 	if err != nil {
 		c.logger.Error(message.Wrap(
 			err,
@@ -638,7 +607,8 @@ func (c *ForwardCtx) startReverseForwardingClient(setupPacket SetupPacket) (chan
 	}
 	if resp.Type == PACKET_ERROR {
 		return nil, fmt.Errorf("received error packet from client")
-	} else if resp.Type != PACKET_SUCCESS {
+	}
+	if resp.Type != PACKET_SUCCESS {
 		return nil, fmt.Errorf("received invalid packet from client")
 	}
 
@@ -657,7 +627,7 @@ func (c *ForwardCtx) StartX11ForwardClient(singleConnection bool, screen string,
 		AuthCookie:       authCookie,
 	}
 
-	return c.startReverseForwardingClient(setupPacket)
+	return c.startReverseForwardingClient(&setupPacket)
 }
 
 func (c *ForwardCtx) StartReverseForwardClient(bindHost string, bindPort uint32, singleConnection bool) (chan *Connection, error) {
@@ -669,7 +639,7 @@ func (c *ForwardCtx) StartReverseForwardClient(bindHost string, bindPort uint32,
 		SingleConnection: singleConnection,
 	}
 
-	return c.startReverseForwardingClient(setupPacket)
+	return c.startReverseForwardingClient(&setupPacket)
 }
 
 func (c *ForwardCtx) StartReverseForwardClientUnix(path string, singleConnection bool) (chan *Connection, error) {
@@ -680,7 +650,7 @@ func (c *ForwardCtx) StartReverseForwardClientUnix(path string, singleConnection
 		SingleConnection: singleConnection,
 	}
 
-	return c.startReverseForwardingClient(setupPacket)
+	return c.startReverseForwardingClient(&setupPacket)
 }
 
 func (c *ForwardCtx) NoMoreConnections() error {
