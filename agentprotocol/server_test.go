@@ -51,7 +51,7 @@ func TestConnectionSetup(t *testing.T) {
 		serverCtx.Kill()
 	}()
 
-	conType, setup, connectionChan, err := clientCtx.StartClient()
+	conType, setup, connectionChan, err := clientCtx.StartServer()
 	if err != nil {
 		t.Fatal("Test failed with error", err)
 	}

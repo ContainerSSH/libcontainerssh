@@ -521,7 +521,7 @@ func (c *forwardCtx) init() {
 	c.decoder = cbor.NewDecoder(c.fromBackend)
 }
 
-func (c *forwardCtx) StartClient() (connectionType uint32, setupPacket SetupPacket, connChan chan Connection, err error) {
+func (c *forwardCtx) StartServer() (connectionType uint32, setupPacket SetupPacket, connChan chan Connection, err error) {
 	c.init()
 
 	packet := Packet{}
@@ -568,7 +568,7 @@ func (c *forwardCtx) StartClient() (connectionType uint32, setupPacket SetupPack
 	return setup.ConnectionType, setup, c.connectionChannel, nil
 }
 
-func (c *forwardCtx) StartServerForward() (chan Connection, error) {
+func (c *forwardCtx) StartClientForward() (chan Connection, error) {
 	c.init()
 
 	setupPacket := SetupPacket{
