@@ -6,17 +6,17 @@ import (
 	"io"
 	"sync"
 
-    protocol "go.containerssh.io/libcontainerssh/agentprotocol"
-    "go.containerssh.io/libcontainerssh/internal/sshserver"
-    "go.containerssh.io/libcontainerssh/log"
+	protocol "go.containerssh.io/libcontainerssh/agentprotocol"
+	"go.containerssh.io/libcontainerssh/internal/sshserver"
+	"go.containerssh.io/libcontainerssh/log"
 )
 
 type agentForward struct {
 	lock            sync.Mutex
-	reverseForwards map[string]*protocol.ForwardCtx
+	reverseForwards map[string]protocol.ForwardCtx
 	nX11Channels    uint32
-	x11Forward      *protocol.ForwardCtx
-	directForward   *protocol.ForwardCtx
+	x11Forward      protocol.ForwardCtx
+	directForward   protocol.ForwardCtx
 	logger          log.Logger
 }
 
@@ -24,7 +24,7 @@ func NewAgentForward(
 	logger log.Logger,
 ) AgentForward {
 	return &agentForward{
-		reverseForwards: make(map[string]*protocol.ForwardCtx),
+		reverseForwards: make(map[string]protocol.ForwardCtx),
 		logger:          logger,
 	}
 }
@@ -61,7 +61,7 @@ func serveConnection(log log.Logger, dst io.WriteCloser, src io.ReadCloser) {
 	_ = src.Close()
 }
 
-func (f *agentForward) serveX11(connChan chan *protocol.Connection, reverseHandler sshserver.ReverseForward) {
+func (f *agentForward) serveX11(connChan chan protocol.Connection, reverseHandler sshserver.ReverseForward) {
 	for {
 		agentConn, ok := <-connChan
 		if !ok {
@@ -94,7 +94,7 @@ func (f *agentForward) serveX11(connChan chan *protocol.Connection, reverseHandl
 	}
 }
 
-func (f *agentForward) serveReverseForward(connChan chan *protocol.Connection, reverseHandler sshserver.ReverseForward) {
+func (f *agentForward) serveReverseForward(connChan chan protocol.Connection, reverseHandler sshserver.ReverseForward) {
 	for {
 		agentConn, ok := <-connChan
 		if !ok {
@@ -120,7 +120,7 @@ func (f *agentForward) serveReverseForward(connChan chan *protocol.Connection, r
 	}
 }
 
-func (f *agentForward) serveReverseForwardUnix(connChan chan *protocol.Connection, reverseHandler sshserver.ReverseForward) {
+func (f *agentForward) serveReverseForwardUnix(connChan chan protocol.Connection, reverseHandler sshserver.ReverseForward) {
 	for {
 		agentConn, ok := <-connChan
 		if !ok {
@@ -325,7 +325,7 @@ func (f *agentForward) setupDirectForward(
 		return err
 	}
 	f.directForward = protocol.NewForwardCtx(fromAgent, toAgent, logger)
-	connChan, err := f.directForward.StartServerForward()
+	connChan, err := f.directForward.StartClientForward()
 	if err != nil {
 		return err
 	}
