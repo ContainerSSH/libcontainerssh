@@ -111,7 +111,6 @@ func (o *oidcDeviceFlow) Verify(ctx context.Context) (string, metadata.Connectio
 		return "", o.meta.AuthFailed(), err
 	}
 	return o.getIdentity(ctx, o.meta, accessToken)
-
 }
 
 func (o *oidcDeviceFlow) getAccessToken(ctx context.Context) (string, error) {
