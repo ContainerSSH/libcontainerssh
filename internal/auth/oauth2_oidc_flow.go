@@ -78,7 +78,8 @@ func (o *oidcFlow) Deauthorize(ctx context.Context) {
 				response.ErrorDescription,
 			)
 		}
-		if err == nil && statusCode == 200 {
+		// If the revocation is successful the return data is not json, so we expect the decoding to fail. Therefore ignore errors if statusCode==200
+		if err == nil || statusCode == 200 {
 			return
 		}
 		err = message.Wrap(
