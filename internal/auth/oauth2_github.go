@@ -128,7 +128,7 @@ func (p *gitHubProvider) SupportsAuthorizationCodeFlow() bool {
 	return true
 }
 
-func (p *gitHubProvider) GetAuthorizationCodeFlow(ctx context.Context, meta metadata.ConnectionAuthPendingMetadata) (OAuth2AuthorizationCodeFlow, error, ) {
+func (p *gitHubProvider) GetAuthorizationCodeFlow(ctx context.Context, meta metadata.ConnectionAuthPendingMetadata) (OAuth2AuthorizationCodeFlow, error) {
 	flow, err := p.createFlow(meta)
 	if err != nil {
 		return nil, err

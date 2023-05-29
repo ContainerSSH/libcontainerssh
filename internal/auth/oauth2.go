@@ -26,7 +26,7 @@ type OAuth2Provider interface {
 	// GetAuthorizationCodeFlow returns the OAuth2AuthorizationCodeFlow for a single urlEncodedClient used for performing
 	// authorization code flow authorization with the OAuth2 server. The method must panic if the device flow is not
 	// supported.
-	GetAuthorizationCodeFlow(ctx context.Context, connectionMetadata metadata.ConnectionAuthPendingMetadata) (OAuth2AuthorizationCodeFlow, error, )
+	GetAuthorizationCodeFlow(ctx context.Context, connectionMetadata metadata.ConnectionAuthPendingMetadata) (OAuth2AuthorizationCodeFlow, error)
 }
 
 type OAuth2Flow interface {

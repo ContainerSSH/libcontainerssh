@@ -3,9 +3,10 @@ package auth
 import (
 	"context"
 	"encoding/base64"
+	"time"
 
 	"go.containerssh.io/libcontainerssh/config"
-	http2 "go.containerssh.io/libcontainerssh/http"
+	"go.containerssh.io/libcontainerssh/http"
 	"go.containerssh.io/libcontainerssh/log"
 	"go.containerssh.io/libcontainerssh/message"
 	"go.containerssh.io/libcontainerssh/metadata"
@@ -39,6 +40,8 @@ func (o *oidcProvider) GetDeviceFlow(ctx context.Context, meta metadata.Connecti
 
 	return &oidcDeviceFlow{
 		flow,
+		10 * time.Second,
+		"",
 		meta,
 	}, nil
 }
@@ -47,7 +50,7 @@ func (o *oidcProvider) SupportsAuthorizationCodeFlow() bool {
 	return o.config.AuthorizationCodeFlow
 }
 
-func (o *oidcProvider) GetAuthorizationCodeFlow(ctx context.Context, meta metadata.ConnectionAuthPendingMetadata) (OAuth2AuthorizationCodeFlow, error, ) {
+func (o *oidcProvider) GetAuthorizationCodeFlow(ctx context.Context, meta metadata.ConnectionAuthPendingMetadata) (OAuth2AuthorizationCodeFlow, error) {
 	flow, err := o.createFlow(ctx, meta)
 	if err != nil {
 		return nil, err
@@ -66,7 +69,7 @@ func (o *oidcProvider) createFlow(ctx context.Context, meta metadata.ConnectionA
 
 	cfg := o.config.HTTPClientConfiguration
 	cfg.RequestEncoding = config.RequestEncodingWWWURLEncoded
-	urlEncodedClient, err := http2.NewClientWithHeaders(
+	urlEncodedClient, err := http.NewClientWithHeaders(
 		cfg,
 		logger,
 		map[string][]string{
@@ -102,4 +105,3 @@ func (o *oidcProvider) createFlow(ctx context.Context, meta metadata.ConnectionA
 	}
 	return flow, nil
 }
-
