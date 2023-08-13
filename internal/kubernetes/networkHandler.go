@@ -90,7 +90,7 @@ func (n *networkHandler) OnHandshakeSuccess(meta metadata.ConnectionAuthenticate
 	}
 	n.labels = map[string]string{
 		"containerssh_connection_id": n.connectionID,
-		"containerssh_username":      r.ReplaceAllString(meta.Username, "-"),
+		"containerssh_username":      r.ReplaceAllString(meta.AuthenticatedUsername, "-"),
 	}
 	for authMetadataName, labelName := range n.config.Pod.ExposeAuthMetadataAsLabels {
 		if value, ok := meta.GetMetadata()[authMetadataName]; ok {
