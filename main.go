@@ -21,6 +21,10 @@ import (
 	"go.containerssh.io/libcontainerssh/service"
 )
 
+var (
+	version = "0.5.0"
+)
+
 // Main is a helper function to start a standard ContainerSSH instance. It should be used as the outer-most function
 // and should never be used as an embedding technique.
 func Main() {
@@ -37,7 +41,7 @@ func Main() {
 
 	logger = logger.WithLabel("module", "core")
 
-	configFile, actionDumpConfig, actionLicenses, actionHealthCheck := getArguments()
+	configFile, actionDumpConfig, actionLicenses, actionHealthCheck, actionVersionCheck := getArguments()
 
 	if configFile == "" {
 		configFile = "config.yaml"
@@ -81,6 +85,8 @@ func Main() {
 		runActionLicenses(configuredLogger)
 	case actionHealthCheck:
 		runHealthCheck(cfg, configuredLogger)
+	case actionVersionCheck:
+		runVersionCheck(configuredLogger)
 	default:
 		runContainerSSH(loggerFactory, configuredLogger, cfg, configFile)
 	}
@@ -94,7 +100,13 @@ func runHealthCheck(cfg config.AppConfig, logger log.Logger) {
 	logger.Info(message.NewMessage(message.MCoreHealthCheckSuccessful, "Health check successful."))
 	os.Exit(0)
 }
-
+func runVersionCheck(logger log.Logger) {
+	if err := printVersion(os.Stdout); err != nil {
+		logger.Critical(err)
+		os.Exit(1)
+	}
+	os.Exit(0)
+}
 func runActionLicenses(logger log.Logger) {
 	if err := printLicenses(os.Stdout); err != nil {
 		logger.Critical(err)
@@ -142,11 +154,12 @@ func runContainerSSH(
 	os.Exit(0)
 }
 
-func getArguments() (string, bool, bool, bool) {
+func getArguments() (string, bool, bool, bool, bool) {
 	configFile := ""
 	actionDumpConfig := false
 	actionLicenses := false
 	healthCheck := false
+	VersionCheck := false
 	flag.StringVar(
 		&configFile,
 		"config",
@@ -171,8 +184,14 @@ func getArguments() (string, bool, bool, bool) {
 		false,
 		"Run health check",
 	)
+	flag.BoolVar(
+		&VersionCheck,
+		"version",
+		false,
+		"Run version check",
+	)
 	flag.Parse()
-	return configFile, actionDumpConfig, actionLicenses, healthCheck
+	return configFile, actionDumpConfig, actionLicenses, healthCheck, VersionCheck
 }
 
 func startServices(cfg config.AppConfig, loggerFactory log.LoggerFactory) error {
@@ -301,6 +320,17 @@ func healthCheck(cfg config.AppConfig, logger log.Logger) error {
 	}
 	if !healthClient.Run() {
 		return message.NewMessage(message.ECoreHealthCheckFailed, "Health check failed")
+	}
+	return nil
+}
+
+func printVersion(writer io.Writer) error {
+	var buffer bytes.Buffer
+	buffer.WriteString("Containerssh Version:")
+	buffer.WriteString(version)
+	buffer.WriteString("\n")
+	if _, err := writer.Write(buffer.Bytes()); err != nil {
+		return fmt.Errorf("failed to write Version information (%w)", err)
 	}
 	return nil
 }
