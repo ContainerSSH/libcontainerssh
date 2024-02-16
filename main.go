@@ -326,7 +326,7 @@ func healthCheck(cfg config.AppConfig, logger log.Logger) error {
 
 func printVersion(writer io.Writer) error {
 	var buffer bytes.Buffer
-	buffer.WriteString("Containerssh Version:")
+	buffer.WriteString("v")
 	buffer.WriteString(version)
 	buffer.WriteString("\n")
 	if _, err := writer.Write(buffer.Bytes()); err != nil {
