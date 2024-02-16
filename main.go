@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 	"syscall"
 	"time"
@@ -19,10 +20,6 @@ import (
 	"go.containerssh.io/libcontainerssh/log"
 	"go.containerssh.io/libcontainerssh/message"
 	"go.containerssh.io/libcontainerssh/service"
-)
-
-var (
-	version = "0.5.0"
 )
 
 // Main is a helper function to start a standard ContainerSSH instance. It should be used as the outer-most function
@@ -326,8 +323,18 @@ func healthCheck(cfg config.AppConfig, logger log.Logger) error {
 
 func printVersion(writer io.Writer) error {
 	var buffer bytes.Buffer
-	buffer.WriteString("v")
-	buffer.WriteString(version)
+	var libcontainersshVersion string
+	bi, ok := debug.ReadBuildInfo()
+	if !ok {
+		return fmt.Errorf("read build info %t", ok)
+	}
+	for _, dep := range bi.Deps {
+		if dep.Path == "go.containerssh.io/libcontainerssh" {
+			libcontainersshVersion = dep.Version
+		}
+	}
+	buffer.WriteString("libcontainerssh version ")
+	buffer.WriteString(libcontainersshVersion)
 	buffer.WriteString("\n")
 	if _, err := writer.Write(buffer.Bytes()); err != nil {
 		return fmt.Errorf("failed to write Version information (%w)", err)
