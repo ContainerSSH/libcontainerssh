@@ -75,12 +75,12 @@ jobs:
           echo "build=$(go env GOCACHE)" >> $GITHUB_OUTPUT
           echo "mod=$(go env GOMODCACHE)" >> $GITHUB_OUTPUT
       - name: Set up go module cache
-        uses: actions/cache@v4
+        uses: actions/cache@v3
         with:
           path: ${{ steps.gopaths.outputs.mod }}
           key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
       - name: Set up go build cache
-        uses: actions/cache@v4
+        uses: actions/cache@v3
         with:
           path: ${{ steps.gopaths.outputs.build }}
           key: ${{ runner.os }}-build-${{ hashFiles('**/go.sum') }}
