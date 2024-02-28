@@ -323,19 +323,34 @@ func healthCheck(cfg config.AppConfig, logger log.Logger) error {
 
 func printVersion(writer io.Writer) error {
 	var buffer bytes.Buffer
-	var libcontainersshVersion string
+	var libcontainersshVersion, buildRevision, buildTime, buildArch, buildmodified string
 	bi, ok := debug.ReadBuildInfo()
 	if !ok {
 		return fmt.Errorf("read build info %t", ok)
 	}
+	fmt.Printf("%+v\n", bi)
 	for _, dep := range bi.Deps {
 		if dep.Path == "go.containerssh.io/libcontainerssh" {
 			libcontainersshVersion = dep.Version
+			break
 		}
 	}
-	buffer.WriteString("libcontainerssh version ")
-	buffer.WriteString(libcontainersshVersion)
-	buffer.WriteString("\n")
+	for _, setting := range bi.Settings {
+		if setting.Key == "vcs.revision" {
+			buildRevision = setting.Value
+		} else if setting.Key == "vcs.time" {
+			buildTime = setting.Value
+		} else if setting.Key == "GOARCH" {
+			buildArch = setting.Value
+		} else if setting.Key == "modified" {
+			buildmodified = setting.Value
+		}
+	}
+	stringGolangVersion := bi.GoVersion + " - " + buildArch + "\n"
+	stringLibcontainersshVersion := fmt.Sprintf("libcontainerssh version : %s\n", libcontainersshVersion)
+	stringBuildRevision := fmt.Sprintf("build revision: %s(%s) {{%s}}\n", buildRevision, buildTime, buildmodified)
+	stringConcateBuildInfo := stringGolangVersion + stringLibcontainersshVersion + stringBuildRevision
+	buffer.WriteString(stringConcateBuildInfo)
 	if _, err := writer.Write(buffer.Bytes()); err != nil {
 		return fmt.Errorf("failed to write Version information (%w)", err)
 	}
