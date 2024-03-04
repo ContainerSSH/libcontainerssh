@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 
 	"github.com/gorilla/schema"
@@ -132,6 +133,9 @@ func (c *client) requestURLWithLogger(
 
 	logger.Debug(message.NewMessage(message.MHTTPClientRequest, "HTTP %s request to %s", method, u))
 
+	reqDump, _ := httputil.DumpRequestOut(req, true)
+	fmt.Printf("REQUEST:\n%s", string(reqDump))
+
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		var typedError message.Message
@@ -144,6 +148,9 @@ func (c *client) requestURLWithLogger(
 		return 0, err
 	}
 	defer func() { _ = resp.Body.Close() }()
+
+	reqDump, _ = httputil.DumpResponse(resp, true)
+	fmt.Printf("RESPONSE:\n%s", string(reqDump))
 
 	logger.Debug(
 		message.NewMessage(
