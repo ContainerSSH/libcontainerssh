@@ -19,6 +19,9 @@ type AppConfig struct {
 	// Auth contains the configuration for user authentication.
 	// swagger:ignore
 	Auth AuthConfig `json:"auth" yaml:"auth"`
+	// CleanupServer contains the settings for fetching the user-specific cleanup webhook.
+	// swagger:ignore
+	CleanupServer HTTPClientConfiguration `json:"cleanupserver" yaml:"cleanupserver"`
 	// Log contains the configuration for the logging level.
 	// swagger:ignore
 	Log LogConfig `json:"log" yaml:"log"`
@@ -119,6 +122,9 @@ func (cfg *AppConfig) Validate(dynamic bool) error {
 	queue.add("geoip", &cfg.GeoIP)
 	queue.add("audit", &cfg.Audit)
 	queue.add("health", &cfg.Health)
+	if cfg.CleanupServer.URL != "" {
+		queue.add("cleanupserver", &cfg.CleanupServer)
+	}
 
 	if cfg.ConfigServer.URL != "" && !dynamic {
 		return queue.Validate()
