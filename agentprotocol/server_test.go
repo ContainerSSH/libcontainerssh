@@ -5,22 +5,21 @@ import (
 	"io"
 	"testing"
 
-    proto "go.containerssh.io/libcontainerssh/agentprotocol"
+	proto "go.containerssh.io/libcontainerssh/agentprotocol"
 
-    log "go.containerssh.io/libcontainerssh/log"
+	log "go.containerssh.io/libcontainerssh/log"
 )
 
-// region Tests
 func TestConnectionSetup(t *testing.T) {
-	log := log.NewTestLogger(t)
+	logger := log.NewTestLogger(t)
 	fromClientReader, fromClientWriter := io.Pipe()
 	toClientReader, toClientWriter := io.Pipe()
 
-	clientCtx := proto.NewForwardCtx(toClientReader, fromClientWriter, log)
-
-	serverCtx := proto.NewForwardCtx(fromClientReader, toClientWriter, log)
+	clientCtx := proto.NewForwardCtx(toClientReader, fromClientWriter, logger)
+	serverCtx := proto.NewForwardCtx(fromClientReader, toClientWriter, logger)
 
 	closeChan := make(chan struct{})
+	startedChan := make(chan struct{})
 
 	go func() {
 		connChan, err := serverCtx.StartReverseForwardClient(
@@ -32,30 +31,32 @@ func TestConnectionSetup(t *testing.T) {
 			panic(err)
 		}
 
+		close(startedChan)
+
 		testConServer := <-connChan
 		err = testConServer.Accept()
 		if err != nil {
-			log.Error("Error accept connection", err)
+			logger.Error("Error accept connection", err)
 		}
 		buf := make([]byte, 512)
 		nBytes, err := testConServer.Read(buf)
 		if err != nil {
-			log.Error("Failed to read from server")
+			logger.Error("Failed to read from server")
 		}
 		_, err = testConServer.Write(buf[:nBytes])
 		if err != nil {
-			log.Error("Failed to write to server")
+			logger.Error("Failed to write to server")
 		}
 		<-closeChan
 		serverCtx.Kill()
 	}()
 
-	conType, setup, connectionChan, err := clientCtx.StartClient()
+	conType, setup, connectionChan, err := clientCtx.StartServer()
 	if err != nil {
 		t.Fatal("Test failed with error", err)
 	}
 	if conType != proto.CONNECTION_TYPE_PORT_FORWARD {
-		panic(fmt.Errorf("Invalid connection type %d", conType))
+		panic(fmt.Errorf("invalid connection type %d", conType))
 	}
 
 	go func() {
