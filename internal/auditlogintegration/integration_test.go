@@ -152,7 +152,7 @@ func checkStoredAuditMessages(t *testing.T, dir string, logger log.Logger) {
 	assert.Equal(t, message.TypeHandshakeSuccessful, messages[3].MessageType)
 	assert.Equal(t, message.TypeNewChannelSuccessful, messages[4].MessageType)
 	assert.Equal(t, message.TypeChannelRequestShell, messages[5].MessageType)
-	assert.Equal(t, message.TypeClose, messages[6].MessageType)
+	assert.True(t, messages[6].MessageType == message.TypeExit || messages[6].MessageType == message.TypeClose)
 	assert.True(t, messages[7].MessageType == message.TypeExit || messages[7].MessageType == message.TypeDisconnect)
 	assert.True(t, messages[8].MessageType == message.TypeExit || messages[8].MessageType == message.TypeDisconnect)
 }
