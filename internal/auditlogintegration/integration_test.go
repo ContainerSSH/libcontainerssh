@@ -99,6 +99,10 @@ func TestConnectMessages(t *testing.T) {
 	if err := session.Close(); err != nil {
 		t.Fatal(err)
 	}
+	// Yield enough for the session to close, if we close the
+	// connection too soon then some of the closing steps might be
+	// bypassed making the check fail
+	time.Sleep(10 * time.Millisecond)
 	if err := connection.Close(); err != nil {
 		t.Fatal(err)
 	}
