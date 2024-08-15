@@ -144,6 +144,7 @@ func checkStoredAuditMessages(t *testing.T, dir string, logger log.Logger) {
 	if done {
 		return
 	}
+	fmt.Printf("Messages: %+v\n", messages)
 	assert.Empty(t, errors)
 	assert.NotEmpty(t, messages)
 	assert.Equal(t, message.TypeConnect, messages[0].MessageType)
