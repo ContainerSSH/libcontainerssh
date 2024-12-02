@@ -8,7 +8,7 @@ linters:
     - asciicheck
     - bodyclose
     - dupl
-    - exportloopref
+    - copyloopvar
     - dogsled
     - importas
     - nilerr
@@ -17,9 +17,7 @@ linters:
     - testpackage
     - whitespace
   disable:
-    # TODO remove these
     - unused
-    - deadcode
 linters-settings:
   gomoddirectives:
     replace-allow-list:
