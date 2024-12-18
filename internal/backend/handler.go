@@ -9,6 +9,7 @@ import (
 
     auth2 "go.containerssh.io/libcontainerssh/auth"
     "go.containerssh.io/libcontainerssh/config"
+    "go.containerssh.io/libcontainerssh/http"
     internalConfig "go.containerssh.io/libcontainerssh/internal/config"
     "go.containerssh.io/libcontainerssh/internal/docker"
     "go.containerssh.io/libcontainerssh/internal/kubernetes"
@@ -27,6 +28,7 @@ type handler struct {
 
 	config                 config.AppConfig
 	configLoader           internalConfig.Loader
+	cleanupClient          http.Client
 	authResponse           sshserver.AuthResponse
 	metricsCollector       metrics.Collector
 	logger                 log.Logger
@@ -219,6 +221,7 @@ func (n *networkHandler) OnDisconnect() {
 	n.lock.Lock()
 	defer n.lock.Unlock()
 	if n.backend != nil {
+		n.cleanupWebhook()
 		n.backend.OnDisconnect()
 		n.backend = nil
 	}
@@ -227,10 +230,26 @@ func (n *networkHandler) OnDisconnect() {
 func (n *networkHandler) OnShutdown(shutdownContext context.Context) {
 	n.lock.Lock()
 	if n.backend != nil {
+		n.cleanupWebhook()
 		backend := n.backend
 		n.lock.Unlock()
 		backend.OnShutdown(shutdownContext)
 	} else {
 		n.lock.Unlock()
+	}
+}
+
+func (n *networkHandler) cleanupWebhook() {
+	if n.rootHandler.cleanupClient != nil {
+		_, err := n.rootHandler.cleanupClient.Post("", map[string]interface{}{
+			"connectionId": n.connectionID,
+		}, nil)
+		if err != nil {
+			n.logger.Error(message.Wrap(
+				err,
+				message.ECleanupWebhook,
+				"Got unexpected response from cleanup webhook",
+			))
+		}
 	}
 }
