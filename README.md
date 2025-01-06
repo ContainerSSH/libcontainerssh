@@ -3,7 +3,8 @@
 <!--suppress HtmlDeprecatedAttribute -->
 <h1 align="center">libcontainerssh</h1>
 
-<center><strong> ⚠️⚠️⚠️ This repository has been deprecated and has been merged into the [main ContainerSSH repository](https://github.com/ContainerSSH/ContainerSSH) all instances of `go.containerssh.io/libcontainerssh` should be replaced with go.containerssh.io/containerssh` as a drop-in replacement. No further versions of this library will be published, all future updates will be made in the main ContainerSSH repository. ⚠️⚠️⚠️ <center><strong>
+<center><strong> ⚠️⚠️⚠️ This repository has been deprecated and has been merged into the <a href="https://github.com/ContainerSSH/ContainerSSH">main ContainerSSH repository</a> all instances of `go.containerssh.io/libcontainerssh` should be replaced with go.containerssh.io/containerssh` as a drop-in replacement. No further versions of this library will be published, all future updates will be made in the main ContainerSSH repository. ⚠️⚠️⚠️ <center><strong>
+
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FContainerSSH%2Flibcontainerssh.svg?type=shield&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2FContainerSSH%2Flibcontainerssh?ref=badge_shield&issueType=license)
 
