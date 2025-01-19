@@ -4,6 +4,7 @@ import (
 	"sync"
 
     "go.containerssh.io/libcontainerssh/config"
+    "go.containerssh.io/libcontainerssh/http"
     internalConfig "go.containerssh.io/libcontainerssh/internal/config"
     "go.containerssh.io/libcontainerssh/internal/metrics"
     "go.containerssh.io/libcontainerssh/internal/sshserver"
@@ -26,7 +27,16 @@ func New(
 	if err != nil {
 		return nil, err
 	}
-
+	var cleanupClient http.Client
+	if config.CleanupServer.URL != "" {
+		cleanupClient, err = http.NewClient(
+			config.CleanupServer,
+			logger,
+		)
+		if err != nil {
+			return nil, err
+		}
+	}
 	backendRequestsCounter := metricsCollector.MustCreateCounter(
 		MetricNameBackendRequests,
 		MetricUnitBackendRequests,
@@ -41,6 +51,7 @@ func New(
 	return &handler{
 		config:                 config,
 		configLoader:           loader,
+		cleanupClient:          cleanupClient,
 		authResponse:           defaultAuthResponse,
 		metricsCollector:       metricsCollector,
 		logger:                 logger,
