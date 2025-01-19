@@ -181,10 +181,10 @@ func startServices(cfg config.AppConfig, loggerFactory log.LoggerFactory) error 
 		return err
 	}
 
-	return startPool(pool, lifecycle)
+	return startPool(pool, lifecycle, cfg)
 }
 
-func startPool(pool Service, lifecycle service.Lifecycle) error {
+func startPool(pool Service, lifecycle service.Lifecycle, cfg config.AppConfig) error {
 	starting := make(chan struct{})
 	lifecycle.OnStarting(
 		func(s service.Service, l service.Lifecycle) {
@@ -203,12 +203,15 @@ func startPool(pool Service, lifecycle service.Lifecycle) error {
 	rotateSignals := make(chan os.Signal, 1)
 	signal.Notify(exitSignals, exitSignalList...)
 	signal.Notify(rotateSignals, rotateSignalList...)
+
+	deadline := cfg.SSH.GracefulTerminationDeadline + 5 * time.Second
+
 	go func() {
 		if _, ok := <-exitSignals; ok {
 			// ok means the channel wasn't closed
 			shutdownContext, cancelFunc := context.WithTimeout(
 				context.Background(),
-				20*time.Second,
+				deadline,
 			)
 			defer cancelFunc()
 			lifecycle.Stop(
