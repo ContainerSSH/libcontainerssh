@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 	"syscall"
 	"time"
@@ -37,7 +38,7 @@ func Main() {
 
 	logger = logger.WithLabel("module", "core")
 
-	configFile, actionDumpConfig, actionLicenses, actionHealthCheck := getArguments()
+	configFile, actionDumpConfig, actionLicenses, actionHealthCheck, actionVersionCheck := getArguments()
 
 	if configFile == "" {
 		configFile = "config.yaml"
@@ -81,6 +82,8 @@ func Main() {
 		runActionLicenses(configuredLogger)
 	case actionHealthCheck:
 		runHealthCheck(cfg, configuredLogger)
+	case actionVersionCheck:
+		runVersionCheck(configuredLogger)
 	default:
 		runContainerSSH(loggerFactory, configuredLogger, cfg, configFile)
 	}
@@ -94,7 +97,13 @@ func runHealthCheck(cfg config.AppConfig, logger log.Logger) {
 	logger.Info(message.NewMessage(message.MCoreHealthCheckSuccessful, "Health check successful."))
 	os.Exit(0)
 }
-
+func runVersionCheck(logger log.Logger) {
+	if err := printVersion(os.Stdout); err != nil {
+		logger.Critical(err)
+		os.Exit(1)
+	}
+	os.Exit(0)
+}
 func runActionLicenses(logger log.Logger) {
 	if err := printLicenses(os.Stdout); err != nil {
 		logger.Critical(err)
@@ -142,11 +151,12 @@ func runContainerSSH(
 	os.Exit(0)
 }
 
-func getArguments() (string, bool, bool, bool) {
+func getArguments() (string, bool, bool, bool, bool) {
 	configFile := ""
 	actionDumpConfig := false
 	actionLicenses := false
 	healthCheck := false
+	VersionCheck := false
 	flag.StringVar(
 		&configFile,
 		"config",
@@ -171,8 +181,14 @@ func getArguments() (string, bool, bool, bool) {
 		false,
 		"Run health check",
 	)
+	flag.BoolVar(
+		&VersionCheck,
+		"version",
+		false,
+		"Run version check",
+	)
 	flag.Parse()
-	return configFile, actionDumpConfig, actionLicenses, healthCheck
+	return configFile, actionDumpConfig, actionLicenses, healthCheck, VersionCheck
 }
 
 func startServices(cfg config.AppConfig, loggerFactory log.LoggerFactory) error {
@@ -301,6 +317,42 @@ func healthCheck(cfg config.AppConfig, logger log.Logger) error {
 	}
 	if !healthClient.Run() {
 		return message.NewMessage(message.ECoreHealthCheckFailed, "Health check failed")
+	}
+	return nil
+}
+
+func printVersion(writer io.Writer) error {
+	var buffer bytes.Buffer
+	var libcontainersshVersion, buildRevision, buildTime, buildArch, buildmodified string
+	bi, ok := debug.ReadBuildInfo()
+	if !ok {
+		return fmt.Errorf("read build info %t", ok)
+	}
+	fmt.Printf("%+v\n", bi)
+	for _, dep := range bi.Deps {
+		if dep.Path == "go.containerssh.io/libcontainerssh" {
+			libcontainersshVersion = dep.Version
+			break
+		}
+	}
+	for _, setting := range bi.Settings {
+		if setting.Key == "vcs.revision" {
+			buildRevision = setting.Value
+		} else if setting.Key == "vcs.time" {
+			buildTime = setting.Value
+		} else if setting.Key == "GOARCH" {
+			buildArch = setting.Value
+		} else if setting.Key == "modified" {
+			buildmodified = setting.Value
+		}
+	}
+	stringGolangVersion := bi.GoVersion + " - " + buildArch + "\n"
+	stringLibcontainersshVersion := fmt.Sprintf("libcontainerssh version : %s\n", libcontainersshVersion)
+	stringBuildRevision := fmt.Sprintf("build revision: %s(%s) {{%s}}\n", buildRevision, buildTime, buildmodified)
+	stringConcateBuildInfo := stringGolangVersion + stringLibcontainersshVersion + stringBuildRevision
+	buffer.WriteString(stringConcateBuildInfo)
+	if _, err := writer.Write(buffer.Bytes()); err != nil {
+		return fmt.Errorf("failed to write Version information (%w)", err)
 	}
 	return nil
 }
